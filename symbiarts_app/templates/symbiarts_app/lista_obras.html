@@ -1,0 +1,30 @@
+{% extends 'symbiarts_app/base.html' %}
+
+{% block content %}
+    {% for obra in obras %}
+        <div class="obra">
+            <div class="date">
+                <p>Publicada el {{ obra.fecha_publicacion }}</p>
+            </div>
+            <h1><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></h1>
+            <!-- Hacer un previsualizador de archivos o galeria -->
+            <a href="{{ obra.archivos.archivo.url }}">{{ obra.archivos.archivo.name }}</a>
+            <p>{{ obra.descripcion|linebreaksbr }}</p>
+            {% if obra.stock %}
+                <p>Stock: {{ obra.stock }}</p>
+            {% endif %}
+            {% if obra.estado %}
+                <p>Estado: {{ obra.estado }}</p>
+            {% endif %}
+            {% if obra.dimensiones %}
+                <p>Dimensiones: {{ obra.dimensiones }}</p>
+            {% endif %}
+            {% if obra.precio %}
+                <p>Precio: {{ obra.precio }}</p>
+            {% endif %}
+            {% if obra.tipo %}
+                <p>Tipo: {{ obra.tipo }}</p>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% endblock %}

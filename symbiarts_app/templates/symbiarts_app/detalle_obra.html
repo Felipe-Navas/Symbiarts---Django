@@ -1,0 +1,36 @@
+{% extends 'symbiarts_app/base.html' %}
+
+{% block content %}
+    <div class="obra">
+        {% if obra.fecha_publicacion %}
+            <div class="date">
+                <p>Publicado el {{ obra.fecha_publicacion }}</p>
+            </div>
+        {% endif %}
+        <a class="btn btn-default" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}">Editar</a>
+        <a class="btn btn-default" href="{% url 'symbiarts_app:eliminar_obra' pk=obra.pk %}">Eliminar</a>
+        <h1>{{ obra.nombre }}</h1>
+        {% for archivo_obra in archivos_obra %}
+            <p><a href="{{ archivo_obra.archivo.url }}">{{ archivo_obra.archivo.name }}</a></p>
+        {% endfor %}
+        {% if obra.descripcion %}
+            <p>{{ obra.descripcion|linebreaksbr }}</p>
+        {% endif %}
+        {% if obra.stock %}
+            <p>Stock: {{ obra.stock }}</p>
+        {% endif %}
+        {% if obra.estado %}
+            <p>Estado: {{ obra.estado }}</p>
+        {% endif %}
+        {% if obra.dimensiones %}
+            <p>Dimensiones: {{ obra.dimensiones }}</p>
+        {% endif %}
+        {% if obra.precio %}
+            <p>Precio: {{ obra.precio }}</p>
+        {% endif %}
+        {% if obra.tipo %}
+            <p>Tipo: {{ obra.tipo }}</p>
+        {% endif %}
+    </div>
+    <hr>
+{% endblock %}
