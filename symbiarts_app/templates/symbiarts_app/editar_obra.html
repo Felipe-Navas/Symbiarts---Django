@@ -1,53 +1,30 @@
 {% extends 'symbiarts_app/base.html' %}
+{% load bootstrap4 %}
+{% bootstrap_javascript jquery='full' %}
 
 {% block content %}
     <h1>Nueva obra</h1>
     <form method="POST" class="post-form" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.non_field_errors }}
-        <div class="form-group">
-            {{ form.nombre.errors }}
-            <label for="{{ form.nombre.id_for_label }}">Nombre de la Obra:</label>
-            <input type="text" class="form-control" id="id_nombre" maxlength="50" required="" placeholder="Ingrese el nombre de la obra" name="nombre" value="{{ nombre }}">
+        {% bootstrap_messages %}
+        {% bootstrap_form_errors form %}
+        {% bootstrap_form_errors file_form %}
+
+        {% bootstrap_field form.nombre placeholder='Ingrese el nombre de la obra' %}
+        {% bootstrap_field form.descripcion placeholder='Ingrese una descripcion para la obra' %}
+        {% bootstrap_field form.stock placeholder='Ingrese el stock de la obra' %}
+        <div style="display: none">
+            {% bootstrap_field form.estado %}
         </div>
-        <div class="form-group">
-            {{ form.descripcion.errors }}
-            <label for="{{ form.descripcion.id_for_label }}">Descripcion de la Obra:</label>
-            <input type="text" class="form-control" id="id_descripcion" maxlength="200" placeholder="Ingrese una descripcion para la obra" name="descripcion" value="{{ descripcion }}">
-        </div>
-        <div class="form-group">
-            {{ form.stock.errors }}
-            <label for="{{ form.stock.id_for_label }}">Stock de la Obra:</label>
-            <input type="number" class="form-control" id="id_stock" value="0" placeholder="Ingrese el stock de la obra" name="stock" value="{{ stock }}">
-        </div>
-        <div class="form-group">
-            {{ form.dimensiones.errors }}
-            <label for="{{ form.dimensiones.id_for_label }}">Dimensiones de la Obra:</label>
-            <input type="text" class="form-control" id="id_dimensiones" maxlength="200" placeholder="Ingrese las dimensiones de la obra" name="dimensiones" value="{{ dimensiones }}">
-        </div>
-        <div class="form-group">
-            {{ form.precio.errors }}
-            <label for="{{ form.precio.id_for_label }}">Precio de la Obra:</label>
-            <input type="number" class="form-control" id="id_precio" step="0.01" placeholder="Ingrese el precio de la obra" name="precio" value="{{ precio }}">
-        </div>
-        <div class="form-group">
-            {{ form.tipo.errors }}
-            <label for="{{ form.tipo.id_for_label }}">Tipo de Obra:</label>
-            <select class="form-control" name="tipo" id="id_tipo">
-                {% for clave, valor in tipos_obra %}
-                    {% if clave == "AW" %}
-                        <option value="{{ clave }}" selected>{{ valor }}</option>
-                    {% else %}
-                        <option value="{{ clave }}">{{ valor }}</option>
-                    {% endif %}
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group">
-            {{ file_form.archivo.errors }}
-            <label for="{{ file_form.archivo.id_for_label }}">Archivos de la Obra:</label>
-            <input type="file" class="form-control-file" id="id_archivo" required="" multiple="" name="archivo">
-        </div>
-        <button type="submit" class="btn btn-primary">Publicar</button>
+        {% bootstrap_field form.dimensiones placeholder='Ingrese las dimensiones de la obra' %}
+        {% bootstrap_field form.precio placeholder='Ingrese el precio de la obra' %}
+        {% bootstrap_field form.tipo %}
+
+        <label for="{{ file_form.archivo.id_for_label }}">Archivos de la Obra:</label>
+        {% bootstrap_field file_form.archivo show_label=False %}
+
+        {% buttons %}
+            <button type="submit" class="btn btn-primary">Publicar</button>
+        {% endbuttons %}
     </form>
 {% endblock %}

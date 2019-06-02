@@ -19,7 +19,7 @@ def detalle_obra(request, pk):
         'archivos_obra': archivos_obra})
 
 
-#@login_required
+@login_required
 def nueva_obra(request):
     if request.method == "POST":
         form = ObraForm(request.POST)
@@ -27,7 +27,7 @@ def nueva_obra(request):
         files = request.FILES.getlist('archivo')
         if form.is_valid() and file_form.is_valid():
             obra = form.save(commit=False)
-            #obra.id_usuario = request.user
+            obra.usuario = request.user
             obra.save()
             for f in files:
                 obra_archivo = ObraArchivo(archivo=f, obra=obra)
@@ -38,13 +38,13 @@ def nueva_obra(request):
         file_form = ObraArchivosForm()
     return render(request, 'symbiarts_app/editar_obra.html', {
         'form': form,
-        'file_form': file_form,
-        'tipos_obra': Obra.tipos_obra})
+        'file_form': file_form})
 
 
-#@login_required
+@login_required
 def editar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
+#    obra_archivo = ObraArchivo.objects.filter(obra__pk=pk)
     if request.method == "POST":
         form = ObraForm(request.POST, instance=obra)
         file_form = ObraArchivosForm(
@@ -54,7 +54,7 @@ def editar_obra(request, pk):
         files = request.FILES.getlist('archivo')
         if form.is_valid() and file_form.is_valid():
             obra = form.save(commit=False)
-            #obra.id_usuario = request.user
+            obra.id_usuario = request.user
             obra.save()
             # Ver si borro to lo que tiene relacionado el ObraArchivos
             for f in files:
@@ -63,13 +63,14 @@ def editar_obra(request, pk):
             return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
     else:
         form = ObraForm(instance=obra)
-        file_form = ObraArchivosForm(instance=obra_archivo)
+#        file_form = ObraArchivosForm(instance=obra_archivo)
+        file_form = ObraArchivosForm()
     return render(request, 'symbiarts_app/editar_obra.html', {
         'form': form,
         'file_form': file_form})
 
 
-#@login_required
+@login_required
 def eliminar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
     obra.delete()
