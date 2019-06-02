@@ -38,7 +38,8 @@ def nueva_obra(request):
         file_form = ObraArchivosForm()
     return render(request, 'symbiarts_app/editar_obra.html', {
         'form': form,
-        'file_form': file_form})
+        'file_form': file_form,
+        'tipos_obra': Obra.tipos_obra})
 
 
 #@login_required

@@ -7,7 +7,7 @@ class Obra(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
 
     # Debe ser no nulo.
-    #usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    usuario = models.ForeignKey('auth.User', on_delete=models.CASCADE)
 
     # Debe ser no nulo y seleccionarse de las cargadas en el sistema.
     #categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
