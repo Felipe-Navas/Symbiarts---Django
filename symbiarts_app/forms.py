@@ -1,9 +1,9 @@
 from django import forms
 
-from .models import Obra, ObraArchivo
+from .models import Obra, ObraArchivo, Comentario
 
 
-class ObraForm(forms.ModelForm):
+class FormObra(forms.ModelForm):
 
     class Meta:
         model = Obra
@@ -17,7 +17,7 @@ class ObraForm(forms.ModelForm):
             'tipo',)
 
 
-class ObraArchivosForm(forms.ModelForm):
+class FormObraArchivos(forms.ModelForm):
     class Meta:
         model = ObraArchivo
         fields = ['archivo']
@@ -25,3 +25,10 @@ class ObraArchivosForm(forms.ModelForm):
             'archivo': forms.ClearableFileInput(
                 attrs={'multiple': True, 'required': True}),
         }
+
+
+class FormComentario(forms.ModelForm):
+
+    class Meta:
+        model = Comentario
+        fields = ('texto',)

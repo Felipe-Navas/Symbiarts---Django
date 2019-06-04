@@ -1,0 +1,5 @@
+<form action="{% url 'symbiarts_app:nuevo_comentario' pk=obra.pk %}" method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Comentar</button>
+</form>

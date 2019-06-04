@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Obra, ObraArchivo
+from .models import Obra, ObraArchivo, Comentario
 from django.utils import timezone
-from .forms import ObraForm, ObraArchivosForm
+from .forms import FormObra, FormObraArchivos, FormComentario
 from django.contrib.auth.decorators import login_required
 
 
@@ -14,16 +14,18 @@ def lista_obras(request):
 def detalle_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
     archivos_obra = ObraArchivo.objects.filter(obra__pk=pk)
+    form = FormComentario()
     return render(request, 'symbiarts_app/detalle_obra.html', {
         'obra': obra,
-        'archivos_obra': archivos_obra})
+        'archivos_obra': archivos_obra,
+        'form': form})
 
 
 @login_required
 def nueva_obra(request):
     if request.method == "POST":
-        form = ObraForm(request.POST)
-        file_form = ObraArchivosForm(request.POST, request.FILES)
+        form = FormObra(request.POST)
+        file_form = FormObraArchivos(request.POST, request.FILES)
         files = request.FILES.getlist('archivo')
         if form.is_valid() and file_form.is_valid():
             obra = form.save(commit=False)
@@ -34,8 +36,8 @@ def nueva_obra(request):
                 obra_archivo.save()
             return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
     else:
-        form = ObraForm()
-        file_form = ObraArchivosForm()
+        form = FormObra()
+        file_form = FormObraArchivos()
     return render(request, 'symbiarts_app/editar_obra.html', {
         'form': form,
         'file_form': file_form})
@@ -46,8 +48,8 @@ def editar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
 #    obra_archivo = ObraArchivo.objects.filter(obra__pk=pk)
     if request.method == "POST":
-        form = ObraForm(request.POST, instance=obra)
-        file_form = ObraArchivosForm(
+        form = FormObra(request.POST, instance=obra)
+        file_form = FormObraArchivos(
             request.POST,
             request.FILES,
             instance=obra)
@@ -62,9 +64,9 @@ def editar_obra(request, pk):
                 obra_archivo.save()
             return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
     else:
-        form = ObraForm(instance=obra)
-#        file_form = ObraArchivosForm(instance=obra_archivo)
-        file_form = ObraArchivosForm()
+        form = FormObra(instance=obra)
+#        file_form = FormObraArchivos(instance=obra_archivo)
+        file_form = FormObraArchivos()
     return render(request, 'symbiarts_app/editar_obra.html', {
         'form': form,
         'file_form': file_form})
@@ -77,33 +79,22 @@ def eliminar_obra(request, pk):
     return redirect('symbiarts_app:lista_obras')
 
 
-"""
-def add_comment_to_post(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+@login_required
+def nuevo_comentario(request, pk):
+    obra = get_object_or_404(Obra, pk=pk)
     if request.method == "POST":
-        form = CommentForm(request.POST)
+        form = FormComentario(request.POST)
         if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            comment.save()
-            return redirect('post_detail', pk=post.pk)
-    else:
-        form = CommentForm()
-    return render(request, 'blog/add_comment_to_post.html', {'form': form})
+            comentario = form.save(commit=False)
+            comentario.obra = obra
+            comentario.usuario = request.user
+            comentario.save()
+            return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
 
 
 @login_required
-def comment_approve(request, pk):
-    comment = get_object_or_404(Comment, pk=pk)
-    comment.approve()
-    return redirect('post_detail', pk=comment.post.pk)
-
-
-@login_required
-def comment_remove(request, pk):
-    comment = get_object_or_404(Comment, pk=pk)
-    comment.delete()
-    return redirect('post_detail', pk=comment.post.pk)
-
-
-"""
+def eliminar_comentario(request, pk):
+    comentario = get_object_or_404(Comentario, pk=pk)
+    comentario.delete()
+    return redirect('symbiarts_app:detalle_obra',
+                    pk=comentario.obra.pk)
