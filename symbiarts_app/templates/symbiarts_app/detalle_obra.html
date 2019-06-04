@@ -33,4 +33,19 @@
         {% endif %}
     </div>
     <hr>
+    {% include 'symbiarts_app/nuevo_comentario.html' %}
+    {% for comentario in obra.comentarios.all %}
+        {% if user.is_authenticated %}
+            <div class="comment">
+                <div class="date">
+                    {{ comentario.fecha }}
+                    <a href="{% url 'symbiarts_app:eliminar_comentario' pk=comentario.pk %}"><i class="far fa-trash-alt"></i></a>
+                </div>
+                <strong>{{ comentario.usuario }}</strong>
+                <p>{{ comentario.texto|linebreaks }}</p>
+            </div>
+        {% endif %}
+    {% empty %}
+        <p>Aun no hay comentarios <i class="far fa-sad-tear"></i></p>
+    {% endfor %}
 {% endblock %}

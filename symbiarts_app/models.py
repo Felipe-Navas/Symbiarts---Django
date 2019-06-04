@@ -58,3 +58,14 @@ class ObraArchivo(models.Model):
     obra = models.ForeignKey(
         Obra, on_delete=models.CASCADE, related_name='archivos')
     archivo = models.FileField(upload_to='archivos/')
+
+
+class Comentario(models.Model):
+    obra = models.ForeignKey(
+        Obra, on_delete=models.CASCADE, related_name='comentarios')
+    usuario = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    texto = models.TextField(max_length=300)
+    fecha = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return self.texto
