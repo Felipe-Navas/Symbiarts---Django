@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Obra, ObraArchivo, Comentario
+from .models import Comentario, Obra, ObraArchivo
 
 
 class FormObra(forms.ModelForm):
@@ -9,6 +9,7 @@ class FormObra(forms.ModelForm):
         model = Obra
         fields = (
             'nombre',
+            'categoria',
             'descripcion',
             'stock',
             'estado',

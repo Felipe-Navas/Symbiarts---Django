@@ -13,6 +13,9 @@
         {% for archivo_obra in archivos_obra %}
             <p><a href="{{ archivo_obra.archivo.url }}">{{ archivo_obra.archivo.name }}</a></p>
         {% endfor %}
+        {% if obra.categoria %}
+            <p>Categoria: {{ obra.categoria }}</p>
+        {% endif %}
         {% if obra.descripcion %}
             <p>{{ obra.descripcion|linebreaksbr }}</p>
         {% endif %}

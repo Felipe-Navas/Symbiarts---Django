@@ -2,6 +2,13 @@ from django.db import models
 from django.utils import timezone
 
 
+class Categoria(models.Model):
+    nombre = models.CharField(max_length=50, unique=True)
+    descripcion = models.TextField(max_length=200, blank=True)
+
+    def __str__(self):
+        return self.nombre
+
 class Obra(models.Model):
     # Debe ser no nulo y único.
     nombre = models.CharField(max_length=50, unique=True)
@@ -10,7 +17,7 @@ class Obra(models.Model):
     usuario = models.ForeignKey('auth.User', on_delete=models.CASCADE)
 
     # Debe ser no nulo y seleccionarse de las cargadas en el sistema.
-    #categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
 
     descripcion = models.CharField(max_length=200, blank=True)
 
