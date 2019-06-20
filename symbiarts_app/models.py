@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 
 class Categoria(models.Model):
@@ -9,12 +10,13 @@ class Categoria(models.Model):
     def __str__(self):
         return self.nombre
 
+
 class Obra(models.Model):
     # Debe ser no nulo y único.
     nombre = models.CharField(max_length=50, unique=True)
 
     # Debe ser no nulo.
-    usuario = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
 
     # Debe ser no nulo y seleccionarse de las cargadas en el sistema.
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
@@ -70,7 +72,7 @@ class ObraArchivo(models.Model):
 class Comentario(models.Model):
     obra = models.ForeignKey(
         Obra, on_delete=models.CASCADE, related_name='comentarios')
-    usuario = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     texto = models.TextField(max_length=300)
     fecha = models.DateTimeField(default=timezone.now)
 

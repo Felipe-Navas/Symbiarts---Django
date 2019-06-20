@@ -2,13 +2,6 @@
 
 {% block content %}
     <div class="obra">
-        {% if obra.fecha_publicacion %}
-            <div class="date">
-                <p>Publicado el {{ obra.fecha_publicacion }}</p>
-            </div>
-        {% endif %}
-        <a class="btn btn-default" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}">Editar</a>
-        <a class="btn btn-default" href="{% url 'symbiarts_app:eliminar_obra' pk=obra.pk %}">Eliminar</a>
         <h1>{{ obra.nombre }}</h1>
         {% for archivo_obra in archivos_obra %}
             <p><a href="{{ archivo_obra.archivo.url }}">{{ archivo_obra.archivo.name }}</a></p>
@@ -34,9 +27,20 @@
         {% if obra.tipo %}
             <p>Tipo: {{ obra.tipo }}</p>
         {% endif %}
+        <p>
+            <a class="btn btn-outline-secondary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}">Editar</a>
+            <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:eliminar_obra' pk=obra.pk %}">Eliminar</a>
+        </p>
+        {% if obra.fecha_publicacion %}
+            <div class="date">
+                <p>Publicado el {{ obra.fecha_publicacion }}</p>
+            </div>
+        {% endif %}
     </div>
     <hr>
     {% include 'symbiarts_app/nuevo_comentario.html' %}
+    <hr>
+    <p>Ultimos comentarios</p>
     {% for comentario in obra.comentarios.all %}
         {% if user.is_authenticated %}
             <div class="comment">

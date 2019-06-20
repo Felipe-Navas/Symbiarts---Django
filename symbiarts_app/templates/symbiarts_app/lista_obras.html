@@ -2,30 +2,41 @@
 
 {% block content %}
     {% for obra in obras %}
-        <div class="obra">
-            <div class="date">
-                <p>Publicada el {{ obra.fecha_publicacion }}</p>
+        <div class="lista_obras">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></h5>
+                    <!-- Hacer un previsualizador de archivos o galeria -->
+                    <a href="{{ obra.archivos.archivo.url }}">{{ obra.archivos.archivo.name }}</a>
+                    <p class="card-text">Categoria: {{ obra.categoria }}</p>
+                    <p class="card-text">{{ obra.descripcion|linebreaksbr }}</p>
+                    {% if obra.stock %}
+                        <p class="card-text">Stock: {{ obra.stock }}</p>
+                    {% endif %}
+                    {% if obra.estado %}
+                        <p class="card-text">Estado: {{ obra.estado }}</p>
+                    {% endif %}
+                    {% if obra.dimensiones %}
+                        <p class="card-text">Dimensiones: {{ obra.dimensiones }}</p>
+                    {% endif %}
+                    {% if obra.precio %}
+                        <pclass="card-text">Precio: {{ obra.precio }}</p>
+                    {% endif %}
+                    {% if obra.tipo %}
+                        <pclass="card-text">Tipo: {{ obra.tipo }}</p>
+                    {% endif %}
+                    <div class="card-footer text-muted">
+                        Publicada el {{ obra.fecha_publicacion }}
+                        <br>
+                        Tiene {{ obra.comentarios.count }}
+                        {% if obra.comentarios.count == 1 %}
+                            comentario
+                        {% else %}
+                            comentarios
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-            <h1><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></h1>
-            <!-- Hacer un previsualizador de archivos o galeria -->
-            <a href="{{ obra.archivos.archivo.url }}">{{ obra.archivos.archivo.name }}</a>
-            <p>Categoria: {{ obra.categoria }}</p>
-            <p>{{ obra.descripcion|linebreaksbr }}</p>
-            {% if obra.stock %}
-                <p>Stock: {{ obra.stock }}</p>
-            {% endif %}
-            {% if obra.estado %}
-                <p>Estado: {{ obra.estado }}</p>
-            {% endif %}
-            {% if obra.dimensiones %}
-                <p>Dimensiones: {{ obra.dimensiones }}</p>
-            {% endif %}
-            {% if obra.precio %}
-                <p>Precio: {{ obra.precio }}</p>
-            {% endif %}
-            {% if obra.tipo %}
-                <p>Tipo: {{ obra.tipo }}</p>
-            {% endif %}
         </div>
     {% endfor %}
 {% endblock %}

@@ -1,3 +1,4 @@
 Django
 mysqlclient
 django-bootstrap4
+django-widget-tweaks
