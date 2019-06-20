@@ -46,6 +46,7 @@
             <div class="comment">
                 <div class="date">
                     {{ comentario.fecha }}
+                    <!-- Agregar que solo el usuario logueado pueda eliminar sus propios comentarios -->
                     <a href="{% url 'symbiarts_app:eliminar_comentario' pk=comentario.pk %}"><i class="far fa-trash-alt"></i></a>
                 </div>
                 <strong>{{ comentario.usuario }}</strong>

@@ -1,5 +1,9 @@
 body {
-  background-image: url(../img/white_wall_hash.png);
+    background-image: url(../img/white_wall_hash.png);
+}
+
+.content {
+    padding-top: 56px;
 }
 
 .lista_obras {
