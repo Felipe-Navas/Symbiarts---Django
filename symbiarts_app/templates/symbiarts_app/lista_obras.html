@@ -1,9 +1,9 @@
 {% extends 'symbiarts_app/base.html' %}
 
 {% block content %}
+    <div class="row justify-content-center">
     {% for obra in obras %}
-        <div class="lista_obras">
-            <div class="card">
+            <div class="card lista_obras">
                 <div class="card-body">
                     <h5 class="card-title"><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></h5>
                     <!-- Hacer un previsualizador de archivos o galeria -->
@@ -28,15 +28,57 @@
                     <div class="card-footer text-muted">
                         Publicada el {{ obra.fecha_publicacion }}
                         <br>
-                        Tiene {{ obra.comentarios.count }}
-                        {% if obra.comentarios.count == 1 %}
-                            comentario
+                        {% if obra.comentarios.count == 0 %}
+                            No tiene comentarios
+                        {% elif obra.comentarios.count == 1 %}
+                            Tiene 1 comentario
                         {% else %}
-                            comentarios
+                            Tiene {{ obra.comentarios.count }} comentarios
                         {% endif %}
                     </div>
                 </div>
             </div>
-        </div>
     {% endfor %}
+    </div>
+
+    {% if obras.has_other_pages %}
+        <div class="row justify-content-center py-4">
+            <nav aria-label="Paginacion de Obras">
+                <ul class="pagination">
+                    {% if obras.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ obras.previous_page_number }}">&laquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                    {% endif %}
+                    {% for page_num in obras.paginator.page_range %}
+                        {% if obras.number == page_num %}
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    {{ page_num }}
+                                    <span class="sr-only">(actual)</span>
+                                </span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if obras.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ obras.next_page_number }}">&raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
 {% endblock %}

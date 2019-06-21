@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Obra, ObraArchivo, Comentario
 from django.utils import timezone
@@ -6,8 +7,18 @@ from django.contrib.auth.decorators import login_required
 
 
 def lista_obras(request):
-    obras = Obra.objects.filter(
+    queryset = Obra.objects.filter(
         fecha_publicacion__lte=timezone.now()).order_by('-fecha_publicacion')
+    page = request.GET.get('page')
+    paginator = Paginator(queryset, 21)
+    try:
+        obras = paginator.page(page)
+    except PageNotAnInteger:
+        # Volver a la primera página
+        obras = paginator.page(1)
+    except EmptyPage:
+        # Voy a la ultima página si llega una libre
+        obras = paginator.page(paginator.num_pages)
     return render(request, 'symbiarts_app/lista_obras.html', {'obras': obras})
 
 
@@ -90,7 +101,8 @@ def nuevo_comentario(request, pk):
             comentario.usuario = request.user
             comentario.save()
             return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
-
+    else:
+        return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
 
 @login_required
 def eliminar_comentario(request, pk):

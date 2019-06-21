@@ -4,7 +4,7 @@
 
 {% block content %}
     <h1>Nueva obra</h1>
-    <form method="POST" class="post-form" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {% bootstrap_messages %}
         {% bootstrap_form_errors form %}
@@ -24,8 +24,10 @@
         <label for="{{ file_form.archivo.id_for_label }}">Archivos de la Obra:</label>
         {% bootstrap_field file_form.archivo show_label=False %}
 
+        <input type="hidden" name="next" value="{{ request.path }}">
         {% buttons %}
             <button type="submit" class="btn btn-primary">Publicar</button>
+            <a href="javascript:window.history.back()" class="btn btn-outline-secondary" role="button">Cancelar</a>
         {% endbuttons %}
     </form>
 {% endblock %}
