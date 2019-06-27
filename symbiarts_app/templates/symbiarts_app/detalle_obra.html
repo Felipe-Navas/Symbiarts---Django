@@ -1,7 +1,9 @@
 {% extends 'symbiarts_app/base.html' %}
+{% load humanize %}
+{% load gravatar %}
 
 {% block content %}
-    <div class="obra">
+    <div class="obra mt-3">
         <h1>{{ obra.nombre }}</h1>
         {% for archivo_obra in archivos_obra %}
             <p><a href="{{ archivo_obra.archivo.url }}">{{ archivo_obra.archivo.name }}</a></p>
@@ -9,9 +11,7 @@
         {% if obra.categoria %}
             <p>Categoria: {{ obra.categoria }}</p>
         {% endif %}
-        {% if obra.descripcion %}
-            <p>{{ obra.descripcion|linebreaksbr }}</p>
-        {% endif %}
+        <p>Descripcion: {{ obra.descripcion|linebreaksbr }}</p>
         {% if obra.stock %}
             <p>Stock: {{ obra.stock }}</p>
         {% endif %}
@@ -32,7 +32,7 @@
             <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:eliminar_obra' pk=obra.pk %}">Eliminar</a>
         {% endif %}
         {% if obra.fecha_publicacion %}
-            <div class="date">
+            <div class="date mt-2">
                 <p>Publicado el {{ obra.fecha_publicacion }}</p>
             </div>
         {% endif %}
@@ -41,28 +41,93 @@
     {% include 'symbiarts_app/nuevo_comentario.html' %}
     <hr>
     <p>Ultimos comentarios</p>
-    {% for comentario in obra.comentarios.all %}
+    {% for comentario in comentarios %}
         {% if user.is_authenticated %}
             <div class="card mb-2">
                 <div class="comment">
                     <div class="date">
                         <div class="row">
-                            <div class="col-4">
-                                <strong> {{ comentario.usuario }}</strong>
+                            <div class="col-2">
+                                <img src="{{ comentario.usuario|gravatar }}" alt="{{ comentario.usuario }}" class="w-40 rounded">
                             </div>
-                            <div class="col-8 text-right">
-                                {{ comentario.fecha }}
+                            <div class="col-6 pl-0">
+                                <p>{{ comentario.texto}}</p>
+                            </div>
+                            <div class="col-4 text-right">
+                                {{ comentario.fecha|naturaltime }}
                                 {% if comentario.usuario == user %}
                                     <a href="{% url 'symbiarts_app:eliminar_comentario' pk=comentario.pk %}"><i class="far fa-trash-alt"></i></a>
                                 {% endif %}
                             </div>
                         </div>
                     </div>
-                    <p>{{ comentario.texto|linebreaks }}</p>
                 </div>
             </div>
         {% endif %}
     {% empty %}
         <p>Aun no hay comentarios <i class="far fa-sad-tear"></i></p>
     {% endfor %}
+
+    {% if comentarios.has_other_pages %}
+        <div class="row justify-content-center py-4">
+            <nav aria-label="Paginacion de Comentarios">
+                <ul class="pagination">
+                    {% if comentarios.number > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">Primera</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Primera</span>
+                        </li>
+                    {% endif %}
+
+                    {% if comentarios.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ comentarios.previous_page_number }}">&laquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                    {% endif %}
+
+                    {% for page_num in comentarios.paginator.page_range %}
+                        {% if comentarios.number == page_num %}
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    {{ page_num }}
+                                    <span class="sr-only">(activo)</span>
+                                </span>
+                            </li>
+                        {% elif page_num > comentarios.number|add:'-5' and page_num < comentarios.number|add:'5' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if comentarios.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ comentarios.next_page_number }}">&raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                    {% endif %}
+
+                    {% if comentarios.number != comentarios.paginator.num_pages %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ comentarios.paginator.num_pages }}">Ultima</a>
+                            </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Ultima</span>
+                            </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
 {% endblock %}

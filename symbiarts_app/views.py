@@ -17,7 +17,7 @@ def lista_obras(request):
         # Volver a la primera página
         obras = paginator.page(1)
     except EmptyPage:
-        # Voy a la ultima página si llega una libre
+        # Voy a la ultima página si llega una inexistente
         obras = paginator.page(paginator.num_pages)
     return render(request, 'symbiarts_app/lista_obras.html', {'obras': obras})
 
@@ -25,11 +25,25 @@ def lista_obras(request):
 def detalle_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
     archivos_obra = ObraArchivo.objects.filter(obra__pk=pk)
+
+    queryset = obra.comentarios.all()
+    page = request.GET.get('page')
+    paginator = Paginator(queryset, 10)
+    try:
+        comentarios = paginator.page(page)
+    except PageNotAnInteger:
+        # Volver a la primera página
+        comentarios = paginator.page(1)
+    except EmptyPage:
+        # Voy a la ultima página si llega una inexistente
+        comentarios = paginator.page(paginator.num_pages)
+
     form = FormComentario()
     return render(request, 'symbiarts_app/detalle_obra.html', {
         'obra': obra,
         'archivos_obra': archivos_obra,
-        'form': form})
+        'form': form,
+        'comentarios': comentarios})
 
 
 @login_required
@@ -103,6 +117,7 @@ def nuevo_comentario(request, pk):
             return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
     else:
         return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
+
 
 @login_required
 def eliminar_comentario(request, pk):

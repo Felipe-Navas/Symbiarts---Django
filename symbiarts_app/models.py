@@ -21,7 +21,7 @@ class Obra(models.Model):
     # Debe ser no nulo y seleccionarse de las cargadas en el sistema.
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
 
-    descripcion = models.CharField(max_length=200, blank=True)
+    descripcion = models.TextField(max_length=300)
 
     stock = models.IntegerField(default=0, null=True, blank=True)
 
@@ -73,7 +73,7 @@ class Comentario(models.Model):
     obra = models.ForeignKey(
         Obra, on_delete=models.CASCADE, related_name='comentarios')
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    texto = models.TextField(max_length=300)
+    texto = models.TextField(max_length=200)
     fecha = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

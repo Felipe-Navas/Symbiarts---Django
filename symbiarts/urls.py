@@ -25,9 +25,11 @@ urlpatterns = [
     path('', include('symbiarts_app.urls')),
     path('signup/', cuentas_views.signup, name='signup'),
     path('login/', auth_views.LoginView.as_view(
-        template_name='login.html'), name='login'),
+         template_name='login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(
-        next_page='/'), name='logout'),
+         next_page='/'), name='logout'),
+    path('mi_cuenta/', cuentas_views.UserUpdateView.as_view(),
+         name='my_account'),
 
     url(r'^reset/$',
         auth_views.PasswordResetView.as_view(

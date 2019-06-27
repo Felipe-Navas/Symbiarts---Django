@@ -1,0 +1,16 @@
+{% extends "symbiarts_app/base.html" %}
+
+{% block title %}Mi cuenta{% endblock %}
+
+{% block content %}
+  <div class="row mt-1">
+    <div class="col-lg-6 col-md-8 col-sm-10">
+      <h1>Mi Cuenta</h1>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include 'includes/form.html' %}
+        <button type="submit" class="btn btn-success">Guardar cambios</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
