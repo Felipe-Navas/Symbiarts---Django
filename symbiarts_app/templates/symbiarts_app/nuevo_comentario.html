@@ -1,6 +1,6 @@
 {% load bootstrap4 %}
 <form action="{% url 'symbiarts_app:nuevo_comentario' pk=obra.pk %}" method="POST">
     {% csrf_token %}
-    {% bootstrap_field form.texto show_label=False placeholder="Escribe un comentario..." %}
+    {% bootstrap_field formComentario.texto show_label=False placeholder="Escribe un comentario..." %}
     <button type="submit" class="btn btn-primary">Comentar</button>
 </form>

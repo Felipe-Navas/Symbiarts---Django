@@ -36,34 +36,38 @@
                 <p>Publicado el {{ obra.fecha_publicacion }}</p>
             </div>
         {% endif %}
+        <form action="{% url 'carrito:agregar_obra_carrito' obra.id %}" method="post">
+            {% csrf_token %}
+            {{ formCarrito }}
+            <button type="submit" class="btn btn-outline-primary">Agregar al carrito</button>
+        </form>
+        <button type="submit" class="btn btn-outline-success">Comprar</button>
     </div>
     <hr>
     {% include 'symbiarts_app/nuevo_comentario.html' %}
     <hr>
     <p>Ultimos comentarios</p>
     {% for comentario in comentarios %}
-        {% if user.is_authenticated %}
-            <div class="card mb-2">
-                <div class="comment">
-                    <div class="date">
-                        <div class="row">
-                            <div class="col-2">
-                                <img src="{{ comentario.usuario|gravatar }}" alt="{{ comentario.usuario }}" class="w-40 rounded">
-                            </div>
-                            <div class="col-6 pl-0">
-                                <p>{{ comentario.texto}}</p>
-                            </div>
-                            <div class="col-4 text-right">
-                                {{ comentario.fecha|naturaltime }}
-                                {% if comentario.usuario == user %}
-                                    <a href="{% url 'symbiarts_app:eliminar_comentario' pk=comentario.pk %}"><i class="far fa-trash-alt"></i></a>
-                                {% endif %}
-                            </div>
+        <div class="card mb-2">
+            <div class="comment">
+                <div class="date">
+                    <div class="row">
+                        <div class="col-2">
+                            <img src="{{ comentario.usuario|gravatar }}" alt="{{ comentario.usuario }}" class="w-40 rounded">
+                        </div>
+                        <div class="col-6 pl-0">
+                            <p>{{ comentario.texto}}</p>
+                        </div>
+                        <div class="col-4 text-right">
+                            {{ comentario.fecha|naturaltime }}
+                            {% if comentario.usuario == user %}
+                                <a href="{% url 'symbiarts_app:eliminar_comentario' pk=comentario.pk %}"><i class="far fa-trash-alt"></i></a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-        {% endif %}
+        </div>
     {% empty %}
         <p>Aun no hay comentarios <i class="far fa-sad-tear"></i></p>
     {% endfor %}

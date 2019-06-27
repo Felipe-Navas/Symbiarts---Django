@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Obra, ObraArchivo, Comentario
 from django.utils import timezone
 from .forms import FormObra, FormObraArchivos, FormComentario
+from carrito.forms import FormAgregarObraCarrito
 from django.contrib.auth.decorators import login_required
 
 
@@ -38,12 +39,14 @@ def detalle_obra(request, pk):
         # Voy a la ultima página si llega una inexistente
         comentarios = paginator.page(paginator.num_pages)
 
-    form = FormComentario()
+    formComentario = FormComentario()
+    formCarrito = FormAgregarObraCarrito()
     return render(request, 'symbiarts_app/detalle_obra.html', {
         'obra': obra,
         'archivos_obra': archivos_obra,
-        'form': form,
-        'comentarios': comentarios})
+        'formComentario': formComentario,
+        'comentarios': comentarios,
+        'formCarrito': formCarrito})
 
 
 @login_required

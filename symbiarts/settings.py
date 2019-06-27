@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'symbiarts_app',
     'cuentas',
+    'carrito',
 ]
 
 MIDDLEWARE = [
@@ -67,6 +68,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'carrito.context_processors.carrito',
             ],
         },
     },
@@ -139,3 +141,5 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+CARRITO_SESSION_ID = 'carrito'
