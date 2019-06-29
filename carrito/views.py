@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from symbiarts_app.models import Obra
+from symbiarts_app.forms import FormBuscar
 from .carrito import Carrito
 from .forms import FormAgregarObraCarrito
 
@@ -33,6 +34,8 @@ def detalle_carrito(request):
         item['form_agregar_obra_carrito'] = FormAgregarObraCarrito(
             initial={'cantidad': item['cantidad'], 'actualizar_cantidad': True}
             )
+    formBuscar = FormBuscar()
     return render(request, 'carrito/detalle_carrito.html', {
-        'carrito': carrito
+        'carrito': carrito,
+        'formBuscar': formBuscar
         })

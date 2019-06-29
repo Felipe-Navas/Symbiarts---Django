@@ -1,9 +1,20 @@
 {% extends 'symbiarts_app/base.html' %}
+
+{% block title %}Tienda Symbiarts{% endblock %}
+
+{% block navbar %}
+    {% include 'symbiarts_app/navbar.html' %}
+{% endblock %}
+
 {% load bootstrap4 %}
 {% bootstrap_javascript jquery='full' %}
 
 {% block content %}
-    <h1>Nueva obra</h1>
+    {% if es_nueva_obra %}
+        <h1>Nueva obra</h1>
+    {% else %}
+        <h1>Editar obra</h1>
+    {% endif %}
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {% bootstrap_messages %}
@@ -26,7 +37,7 @@
 
         <input type="hidden" name="next" value="{{ request.path }}">
         {% buttons %}
-            <button type="submit" class="btn btn-primary">Publicar</button>
+            <button type="submit" class="btn btn-primary">Confirmar</button>
             <a href="javascript:window.history.back()" class="btn btn-outline-secondary" role="button">Cancelar</a>
         {% endbuttons %}
     </form>

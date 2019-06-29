@@ -1,6 +1,10 @@
-{% extends "symbiarts_app/base.html" %}
+{% extends 'symbiarts_app/base.html' %}
 
 {% block title %}Mi cuenta{% endblock %}
+
+{% block navbar %}
+    {% include 'symbiarts_app/navbar.html' %}
+{% endblock %}
 
 {% block content %}
   <div class="row mt-1">

@@ -2,7 +2,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Obra, ObraArchivo, Comentario
 from django.utils import timezone
-from .forms import FormObra, FormObraArchivos, FormComentario
+from .forms import FormObra, FormObraArchivos, FormComentario, FormBuscar
 from carrito.forms import FormAgregarObraCarrito
 from django.contrib.auth.decorators import login_required
 
@@ -20,7 +20,10 @@ def lista_obras(request):
     except EmptyPage:
         # Voy a la ultima página si llega una inexistente
         obras = paginator.page(paginator.num_pages)
-    return render(request, 'symbiarts_app/lista_obras.html', {'obras': obras})
+    formBuscar = FormBuscar()
+    return render(request, 'symbiarts_app/lista_obras.html', {
+        'obras': obras,
+        'formBuscar': formBuscar})
 
 
 def detalle_obra(request, pk):
@@ -41,12 +44,14 @@ def detalle_obra(request, pk):
 
     formComentario = FormComentario()
     formCarrito = FormAgregarObraCarrito()
+    formBuscar = FormBuscar()
     return render(request, 'symbiarts_app/detalle_obra.html', {
         'obra': obra,
         'archivos_obra': archivos_obra,
         'formComentario': formComentario,
         'comentarios': comentarios,
-        'formCarrito': formCarrito})
+        'formCarrito': formCarrito,
+        'formBuscar': formBuscar})
 
 
 @login_required
@@ -66,9 +71,11 @@ def nueva_obra(request):
     else:
         form = FormObra()
         file_form = FormObraArchivos()
+    es_nueva_obra = True
     return render(request, 'symbiarts_app/editar_obra.html', {
         'form': form,
-        'file_form': file_form})
+        'file_form': file_form,
+        'es_nueva_obra': es_nueva_obra})
 
 
 @login_required
@@ -95,9 +102,11 @@ def editar_obra(request, pk):
         form = FormObra(instance=obra)
 #        file_form = FormObraArchivos(instance=obra_archivo)
         file_form = FormObraArchivos()
+    es_nueva_obra = False
     return render(request, 'symbiarts_app/editar_obra.html', {
         'form': form,
-        'file_form': file_form})
+        'file_form': file_form,
+        'es_nueva_obra': es_nueva_obra})
 
 
 @login_required
@@ -128,3 +137,36 @@ def eliminar_comentario(request, pk):
     comentario.delete()
     return redirect('symbiarts_app:detalle_obra',
                     pk=comentario.obra.pk)
+
+
+queryset_buscar = None
+
+
+def buscar_obras(request):
+    if request.method == "POST":
+        formBuscar = FormBuscar(request.POST)
+        if formBuscar.is_valid():
+            cadena_buscada = formBuscar.cleaned_data.get("cadena")
+            global queryset_buscar
+            queryset_buscar = Obra.objects.filter(
+                nombre__icontains=cadena_buscada
+                ) & Obra.objects.filter(
+                fecha_publicacion__lte=timezone.now()
+                ).order_by('-fecha_publicacion')
+
+    page = request.GET.get('page')
+    paginator = Paginator(queryset_buscar, 21)
+    try:
+        obras = paginator.page(page)
+    except PageNotAnInteger:
+        # Volver a la primera página
+        obras = paginator.page(1)
+    except EmptyPage:
+        # Voy a la ultima página si llega una inexistente
+        obras = paginator.page(paginator.num_pages)
+    formBuscar = FormBuscar()
+
+    return render(request, 'symbiarts_app/lista_obras.html', {
+        'obras': obras,
+        'formBuscar': formBuscar,
+        'cadena_buscada': cadena_buscada})

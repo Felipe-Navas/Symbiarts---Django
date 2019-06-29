@@ -5,6 +5,7 @@ from . import views
 app_name = 'symbiarts_app'
 urlpatterns = [
     path('', views.lista_obras, name='lista_obras'),
+    path('buscar/', views.buscar_obras, name='buscar_obras'),
     path('obra/<int:pk>/', views.detalle_obra, name='detalle_obra'),
     path('obra/nueva', views.nueva_obra, name='nueva_obra'),
     path('obra/<int:pk>/editar/', views.editar_obra, name='editar_obra'),

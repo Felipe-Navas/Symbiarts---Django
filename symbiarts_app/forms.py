@@ -4,7 +4,6 @@ from .models import Comentario, Obra, ObraArchivo
 
 
 class FormObra(forms.ModelForm):
-
     class Meta:
         model = Obra
         fields = (
@@ -29,7 +28,10 @@ class FormObraArchivos(forms.ModelForm):
 
 
 class FormComentario(forms.ModelForm):
-
     class Meta:
         model = Comentario
         fields = ('texto',)
+
+
+class FormBuscar(forms.Form):
+    cadena = forms.CharField(max_length=50)
