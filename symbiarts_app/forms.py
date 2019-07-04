@@ -1,14 +1,14 @@
 from django import forms
 
-from .models import Obra, ObraArchivo, Comentario
+from .models import Comentario, Obra, ObraArchivo
 
 
 class FormObra(forms.ModelForm):
-
     class Meta:
         model = Obra
         fields = (
             'nombre',
+            'categoria',
             'descripcion',
             'stock',
             'estado',
@@ -28,7 +28,13 @@ class FormObraArchivos(forms.ModelForm):
 
 
 class FormComentario(forms.ModelForm):
-
     class Meta:
         model = Comentario
-        fields = ('texto',)
+        fields = ['texto']
+        widgets = {
+          'texto': forms.Textarea(attrs={'rows': 2}),
+        }
+
+
+class FormBuscar(forms.Form):
+    cadena = forms.CharField(max_length=50)

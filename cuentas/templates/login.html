@@ -1,0 +1,32 @@
+{% extends 'symbiarts_app/base.html' %}
+
+{% block title %}Iniciar sesión en Symbiarts{% endblock %}
+
+{% block navbar %}
+    {% include 'symbiarts_app/navbar.html' %}
+{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-lg-4 col-md-6 col-sm-8">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">Iniciar sesión</h3>
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% include 'includes/form.html' %}
+            <button type="submit" class="btn btn-primary btn-block">Iniciar sesión</button>
+          </form>
+        </div>
+        <div class="card-footer text-muted text-center">
+          Nuevo en Symbiarts? <a href="{% url 'signup' %}">Regístrate</a>
+        </div>
+      </div>
+      <div class="text-center py-2">
+        <small>
+          <a href="{% url 'password_reset' %}" class="text-muted">Olvido la contraseña?</a>
+        </small>
+      </div>
+    </div>
+  </div>
+{% endblock %}
