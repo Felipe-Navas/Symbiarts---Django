@@ -1,10 +1,13 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Obra, ObraArchivo, Comentario
+from .models import Obra, ObraArchivo, Comentario, MetodoPago
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from .forms import FormObra, FormObraArchivos, FormComentario, FormBuscar
 from carrito.forms import FormAgregarObraCarrito
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from carrito.carrito import Carrito
 
 
 def lista_obras(request):
@@ -140,19 +143,22 @@ def eliminar_comentario(request, pk):
 
 
 queryset_buscar = None
+cadena_buscada = None
 
 
 def buscar_obras(request):
     if request.method == "POST":
         formBuscar = FormBuscar(request.POST)
         if formBuscar.is_valid():
+            global cadena_buscada
             cadena_buscada = formBuscar.cleaned_data.get("cadena")
+            lookups = ((Q(nombre__icontains=cadena_buscada) |
+                       Q(descripcion__icontains=cadena_buscada) |
+                       Q(categoria__nombre__icontains=cadena_buscada)) &
+                       Q(fecha_publicacion__lte=timezone.now()))
             global queryset_buscar
             queryset_buscar = Obra.objects.filter(
-                nombre__icontains=cadena_buscada
-                ) & Obra.objects.filter(
-                fecha_publicacion__lte=timezone.now()
-                ).order_by('-fecha_publicacion')
+                lookups).order_by('-fecha_publicacion')
 
     page = request.GET.get('page')
     paginator = Paginator(queryset_buscar, 21)
@@ -170,3 +176,27 @@ def buscar_obras(request):
         'obras': obras,
         'formBuscar': formBuscar,
         'cadena_buscada': cadena_buscada})
+
+
+@require_POST
+def orquestar_compra_carrito(request, obra_id):
+    formCarrito = FormAgregarObraCarrito(request.POST)
+    if formCarrito.is_valid():
+        cantidad_obras = formCarrito.cleaned_data.get("cantidad")
+        metodos_pago = MetodoPago.objects.order_by('nombre')
+        obra = get_object_or_404(Obra, pk=obra_id)
+        accion = formCarrito.cleaned_data.get("accion")
+        if accion == 'comprar':
+            return render(request, 'symbiarts_app/como_pagar_obra.html', {
+                'obra': obra,
+                'metodos_pago': metodos_pago,
+                'cantidad_obras': cantidad_obras})
+        elif accion == 'agregar_al_carrito':
+            carrito = Carrito(request)
+            act_cantidad = formCarrito.cleaned_data.get('actualizar_cantidad')
+            carrito.agregar_obra(
+                obra=obra,
+                cantidad=cantidad_obras,
+                actualizar_cantidad=act_cantidad
+                )
+            return redirect('carrito:detalle_carrito')

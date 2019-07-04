@@ -1,5 +1,5 @@
 {% extends 'symbiarts_app/base.html' %}
-
+{% load static %}
 {% block title %}Tienda Symbiarts{% endblock %}
 
 {% block navbar %}
@@ -10,45 +10,53 @@
 {% load gravatar %}
 
 {% block content %}
-    <div class="obra mt-3">
-        <h1>{{ obra.nombre }}</h1>
-        {% for archivo_obra in archivos_obra %}
-            <p><a href="{{ archivo_obra.archivo.url }}">{{ archivo_obra.archivo.name }}</a></p>
-        {% endfor %}
-        {% if obra.categoria %}
-            <p>Categoria: {{ obra.categoria }}</p>
-        {% endif %}
-        <p>Descripcion: {{ obra.descripcion|linebreaksbr }}</p>
-        {% if obra.stock %}
-            <p>Stock: {{ obra.stock }}</p>
-        {% endif %}
-        {% if obra.estado %}
-            <p>Estado: {{ obra.estado }}</p>
-        {% endif %}
-        {% if obra.dimensiones %}
-            <p>Dimensiones: {{ obra.dimensiones }}</p>
-        {% endif %}
-        {% if obra.precio %}
-            <p>Precio: {{ obra.precio }}</p>
-        {% endif %}
-        {% if obra.tipo %}
-            <p>Tipo: {{ obra.tipo }}</p>
-        {% endif %}
-        {% if obra.usuario == user %}
-            <a class="btn btn-outline-secondary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}">Editar</a>
-            <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:eliminar_obra' pk=obra.pk %}">Eliminar</a>
-        {% endif %}
-        {% if obra.fecha_publicacion %}
-            <div class="date mt-2">
-                <p>Publicado el {{ obra.fecha_publicacion }}</p>
+    <div class="card mt-3 p-3">
+        <div class="row">
+            <div class="col-8">
+                {% for archivo_obra in archivos_obra %}
+                    <p><a href="{{ archivo_obra.archivo.url }}">{{ archivo_obra.archivo.name }}</a></p>
+                {% endfor %}
+                <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="Smiley face" height="530" width="690">
             </div>
-        {% endif %}
-        <form action="{% url 'carrito:agregar_obra_carrito' obra.id %}" method="post">
-            {% csrf_token %}
-            {{ formCarrito }}
-            <button type="submit" class="btn btn-outline-primary">Agregar al carrito</button>
-        </form>
-        <button type="submit" class="btn btn-outline-success">Comprar</button>
+            <div class="col-4">
+                <h2>{{ obra.nombre }}</h2>
+                {% if obra.categoria %}
+                    <p>Categoria: {{ obra.categoria }}</p>
+                {% endif %}
+                <p>Descripcion: {{ obra.descripcion|linebreaksbr }}</p>
+                {% if obra.stock %}
+                    <p>Stock: {{ obra.stock }}</p>
+                {% endif %}
+                {% if obra.estado %}
+                    <p>Estado: {{ obra.estado }}</p>
+                {% endif %}
+                {% if obra.dimensiones %}
+                    <p>Dimensiones: {{ obra.dimensiones }}</p>
+                {% endif %}
+                {% if obra.precio %}
+                    <p>Precio: {{ obra.precio }}</p>
+                {% endif %}
+                {% if obra.tipo %}
+                    <p>Tipo: {{ obra.tipo }}</p>
+                {% endif %}
+                {% if obra.usuario == user %}
+                    <a class="btn btn-outline-secondary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}">Editar</a>
+                    <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:eliminar_obra' pk=obra.pk %}">Eliminar</a>
+                {% endif %}
+                {% if obra.fecha_publicacion %}
+                    <div class="date mt-2">
+                        <p>Publicado el {{ obra.fecha_publicacion }}</p>
+                    </div>
+                {% endif %}
+                <form action="{% url 'symbiarts_app:orquestar_compra_carrito' obra.id %}" method="post">
+                    {% csrf_token %}
+                    {{ formCarrito }}
+                    <button type="submit" class="btn btn-outline-primary" name="accion" value="agregar_al_carrito">Agregar al carrito</button>
+                    <button type="submit" class="btn btn-outline-success" name="accion" value="comprar">Comprar</button>
+                </form>
+                </form>
+            </div>
+        </div>
     </div>
     <hr>
     {% include 'symbiarts_app/nuevo_comentario.html' %}

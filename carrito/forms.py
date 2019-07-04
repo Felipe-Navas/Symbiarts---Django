@@ -11,3 +11,5 @@ class FormAgregarObraCarrito(forms.Form):
 
     actualizar_cantidad = forms.BooleanField(
         required=False, initial=False, widget=forms.HiddenInput)
+
+    accion = forms.CharField(widget=forms.HiddenInput, required=False)
