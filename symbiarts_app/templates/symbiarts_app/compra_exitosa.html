@@ -1,0 +1,16 @@
+{% extends 'symbiarts_app/base.html' %}
+{% load static %}
+{% block title %}Tienda Symbiarts - Compra exitosa!{% endblock %}
+
+{% block content %}
+    <div class="jumbotron text-xs-center">
+        <h1 class="display-3">¡Gracias por comprar en Symbiarts!</h1>
+        <p class="lead">
+            <strong>Revisá tu email,</strong> te enviamos el resumen de tu compra con tu comprobante.
+        </p>
+        <hr>
+        <p class="lead">
+            <a class="btn btn-primary" href="{% url 'symbiarts_app:lista_obras' %}" role="button">Volver a la tienda</a>
+        </p>
+    </div>
+{% endblock %}

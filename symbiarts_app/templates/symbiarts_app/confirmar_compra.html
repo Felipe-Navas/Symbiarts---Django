@@ -1,6 +1,6 @@
 {% extends 'symbiarts_app/base.html' %}
 {% load static %}
-{% block title %}Tienda Symbiarts - Como Pagar?{% endblock %}
+{% block title %}Tienda Symbiarts - Confirmar Compra{% endblock %}
 
 {% block navbar %}
     {% include 'symbiarts_app/navbar.html' %}
@@ -10,17 +10,16 @@
     <div class="card mt-3 p-3">
         <div class="row">
             <div class="col-8">
-                <ul class="list-group">
-                    <form action="{% url 'symbiarts_app:confirmar_compra' obra.id %}" method="post">
-                        {% csrf_token %}
-                        {{ formComoPagarObra }}
-                        {% for metodo_pago in metodos_pago %}
-                            <li class="list-group-item">
-                                <button type="submit" class="btn btn-outline-primary" name="metodoPago" value="{{ metodo_pago.nombre }}">{{ metodo_pago.nombre }}</button>
-                            </li>
-                        {% endfor %}
-                    </form>
-                </ul>
+                <h2>Revisá y confirmá tu compra</h2>
+
+                <h3>Detalle del envío</h3>
+                <li class="list-group-item">Envío acordar con el vendedor</li>
+
+                <h3>Detalle del pago</h3>
+                <li class="list-group-item">Paypal</li>
+
+                <h3>Datos de facturación</h3>
+                <li class="list-group-item">{{ user.username }}</li>
 
             </div>
             <div class="col-4">
@@ -36,6 +35,10 @@
                 {% if obra.precio %}
                     <p>Precio: {{ obra.precio }}</p>
                 {% endif %}
+                <form action="{% url 'symbiarts_app:grabar_compra' obra.id %}" method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-success">Confirmar Compra</button>
+                </form>
             </div>
         </div>
     </div>

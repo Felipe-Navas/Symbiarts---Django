@@ -1,9 +1,11 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Obra, ObraArchivo, Comentario, MetodoPago
+from .models import (Obra, ObraArchivo, Comentario, MetodoPago, VentaObra,
+                     DetalleVentaObra)
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from .forms import FormObra, FormObraArchivos, FormComentario, FormBuscar
+from .forms import (FormObra, FormObraArchivos, FormComentario, FormBuscar,
+                    FormComoPagarObra)
 from carrito.forms import FormAgregarObraCarrito
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -187,10 +189,13 @@ def orquestar_compra_carrito(request, obra_id):
         obra = get_object_or_404(Obra, pk=obra_id)
         accion = formCarrito.cleaned_data.get("accion")
         if accion == 'comprar':
+            request.session['cantidad_obras'] = cantidad_obras
+            formComoPagarObra = FormComoPagarObra()
             return render(request, 'symbiarts_app/como_pagar_obra.html', {
                 'obra': obra,
                 'metodos_pago': metodos_pago,
-                'cantidad_obras': cantidad_obras})
+                'cantidad_obras': cantidad_obras,
+                'formComoPagarObra': formComoPagarObra})
         elif accion == 'agregar_al_carrito':
             carrito = Carrito(request)
             act_cantidad = formCarrito.cleaned_data.get('actualizar_cantidad')
@@ -200,3 +205,45 @@ def orquestar_compra_carrito(request, obra_id):
                 actualizar_cantidad=act_cantidad
                 )
             return redirect('carrito:detalle_carrito')
+
+
+@require_POST
+def confirmar_compra(request, obra_id):
+    obra = get_object_or_404(Obra, id=obra_id)
+    formComoPagarObra = FormComoPagarObra(request.POST)
+    if formComoPagarObra.is_valid():
+        metodo_pago_elegido = formComoPagarObra.cleaned_data.get('metodoPago')
+        request.session['metodo_pago_elegido'] = metodo_pago_elegido
+        cantidad_obras = request.session['cantidad_obras']
+        return render(request, 'symbiarts_app/confirmar_compra.html', {
+            'obra': obra,
+            'cantidad_obras': cantidad_obras})
+
+
+@login_required
+@require_POST
+def grabar_compra(request, obra_id):
+    obra = get_object_or_404(Obra, id=obra_id)
+    metodo_pago_elegido = request.session['metodo_pago_elegido']
+    cantidad_obras = request.session['cantidad_obras']
+    metodo_pago = MetodoPago.objects.filter(nombre=metodo_pago_elegido).first()
+    venta_obra = VentaObra.objects.create(
+        cliente=request.user,
+        metodo_pago=metodo_pago)
+
+    DetalleVentaObra.objects.create(
+        venta_obra=venta_obra,
+        obra=obra,
+        precio_obra=obra.precio,
+        cantidad_obra=cantidad_obras)
+    request.session['compra_exitosa'] = True
+    return redirect('symbiarts_app:compra_exitosa')
+
+
+@login_required
+def compra_exitosa(request):
+    if request.session['compra_exitosa'] == True:
+        request.session['compra_exitosa'] = False
+        return render(request, 'symbiarts_app/compra_exitosa.html')
+    else:
+        return redirect('symbiarts_app:lista_obras')

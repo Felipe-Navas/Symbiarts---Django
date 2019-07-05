@@ -2,7 +2,7 @@ from django import forms
 
 
 # Reemplazar por el stock del producto
-PRODUCT_QUANTITY_CHOICES = [(i, str(i)) for i in range(1, 26)]
+PRODUCT_QUANTITY_CHOICES = [(i, str(i)) for i in range(1, 10)]
 
 
 class FormAgregarObraCarrito(forms.Form):

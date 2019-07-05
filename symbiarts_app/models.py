@@ -94,7 +94,7 @@ class VentaObra(models.Model):
     fecha = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.pk
+        return "Venta {}".format(self.pk)
 
 
 class DetalleVentaObra(models.Model):
@@ -107,4 +107,4 @@ class DetalleVentaObra(models.Model):
     cantidad_obra = models.IntegerField()
 
     def __str__(self):
-        return self.pk
+        return "Detalle {}".format(self.pk)
