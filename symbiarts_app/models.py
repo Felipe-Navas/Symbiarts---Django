@@ -58,6 +58,9 @@ class Obra(models.Model):
 
     # tags
 
+    def obtener_stock(self):
+        return self.stock
+
     def __str__(self):
         return self.nombre
 

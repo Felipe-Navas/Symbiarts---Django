@@ -1,6 +1,7 @@
 {% extends 'symbiarts_app/base.html' %}
 {% load static %}
-{% block title %}Tienda Symbiarts - Confirmar Compra{% endblock %}
+
+{% block title %}Tienda Symbiarts - Confirmar compra carrito{% endblock %}
 
 {% block navbar %}
     {% include 'symbiarts_app/navbar.html' %}
@@ -15,6 +16,18 @@
                 <h3>Detalle del envío</h3>
                 <li class="list-group-item">Envío acordar con el vendedor</li>
 
+                <h3>Detalle de las obras</h3>
+                {% for item in carrito %}
+                    {% with obra=item.obra  %}
+                        <li class="list-group-item">
+                            <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="..." height="70" width="70">
+                            {{ obra.nombre }}
+                            ({{ item.cantidad }})
+                            Precio: ${{ item.precio }}
+                            Subtotal: ${{ item.precio_total }}
+                        </li>
+                    {% endwith %}
+                {% endfor %}
                 <h3>Detalle del pago</h3>
                 <li class="list-group-item">{{ metodo_pago_elegido }}</li>
 
@@ -23,17 +36,11 @@
 
             </div>
             <div class="col-4">
-                <!-- Agregar imagen principal de obra -->
-                <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="Smiley face" height="60" width="60">
-                <h2>{{ obra.nombre }}</h2>
-                <p>Cantidad: {{ cantidad_obras }}</p>
-                <p>Categoria: {{ obra.categoria }}</p>
+                <h5>Resumen de compra</h5>
+                <p>Obras: {{ carrito|length }}</p>
                 <p>Envío: Acordar con el vendedor</p>
-
-                <p>Precio: {{ obra.precio }}</p>
-                <p>Total: {{ precio_total}}</p>
-
-                <form action="{% url 'symbiarts_app:grabar_compra' obra.id %}" method="post">
+                <p>Precio total: {{ carrito.obtener_precio_total }}</p>
+                <form action="{% url 'symbiarts_app:grabar_compra_carrito' %}" method="post">
                     {% csrf_token %}
                     <button class="btn btn-success">Confirmar Compra</button>
                 </form>
