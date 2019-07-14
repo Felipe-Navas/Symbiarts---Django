@@ -23,8 +23,8 @@
                 {% endwith %}
             </span>
         </h2>
-            <table class="table table-striped table-hover">
-                <thead style="background-color: #5AC8FA">
+            <table class="table table-responsive table-hover">
+                <thead class="table-dark">
                     <tr>
                         <th>Imagen</th>
                         <th>Obra</th>
@@ -40,13 +40,8 @@
                         <tr>
                             <td>
                                 <a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">
-                                    <img src="
-                                        {% if obra.archivos %}
-                                            {{ obra.archivos.archivo.url }}
-                                        {% else %}
-                                            {% static 'img/default.svg' %}
-                                        {% endif %}"
-                                        alt="..." style="height: 130px; width: auto">
+                                    <img src="{% static '/img/default.svg' %}"
+                                        alt="..." style="height: 90px; width: auto">
                                 </a>
                             </td>
                             <td>{{ obra.nombre }}</td>
@@ -55,7 +50,7 @@
                                     {% csrf_token %}
                                     {{ item.form_agregar_obra_carrito.cantidad }}
                                     {{ item.form_agregar_obra_carrito.actualizar_cantidad }}
-                                    <input type="submit" value="Update" class="btn btn-info">
+                                    <button type="submit" class="btn btn-info"><i class="fas fa-sync-alt"></i></button>
                                 </form>
                             </td>
                             <td>
@@ -66,7 +61,7 @@
                         </tr>
                     {% endwith %}
                 {% endfor %}
-                <tr style="background-color: #5AC8FA">
+                <tr class="table-dark">
                     <td><b>Total</b></td>
                     <td colspan="4"></td>
                     <td colspan="num"><b>$ {{ carrito.obtener_precio_total }}</b></td>

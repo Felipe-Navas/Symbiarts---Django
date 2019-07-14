@@ -10,34 +10,23 @@
 {% load gravatar %}
 
 {% block content %}
-    <div class="card mt-3 p-3">
+    <div class="card p-3">
         <div class="row">
             <div class="col-8">
-                {% for archivo_obra in archivos_obra %}
-                    <p><a href="{{ archivo_obra.archivo.url }}">{{ archivo_obra.archivo.name }}</a></p>
-                {% endfor %}
-                <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="Smiley face" height="530" width="690">
+                {% if user.username == "algo" %}
+                    {% for archivo_obra in archivos_obra %}
+                        <p><a href="{{ archivo_obra.archivo.url }}">{{ archivo_obra.archivo.name }}</a></p>
+                    {% endfor %}
+                {% endif %}
+                <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="Smiley face" height="430" width="590">
             </div>
             <div class="col-4">
                 <h2>{{ obra.nombre }}</h2>
                 {% if obra.categoria %}
                     <p>Categoria: {{ obra.categoria }}</p>
                 {% endif %}
-                <p>Descripcion: {{ obra.descripcion|linebreaksbr }}</p>
-                {% if obra.stock %}
-                    <p>Stock: {{ obra.stock }}</p>
-                {% endif %}
-                {% if obra.estado %}
-                    <p>Estado: {{ obra.estado }}</p>
-                {% endif %}
-                {% if obra.dimensiones %}
-                    <p>Dimensiones: {{ obra.dimensiones }}</p>
-                {% endif %}
                 {% if obra.precio %}
                     <p>Precio: {{ obra.precio }}</p>
-                {% endif %}
-                {% if obra.tipo %}
-                    <p>Tipo: {{ obra.tipo }}</p>
                 {% endif %}
                 {% if obra.usuario == user %}
                     <a class="btn btn-outline-secondary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}">Editar</a>
@@ -56,6 +45,15 @@
                 </form>
                 </form>
             </div>
+        </div>
+        <div class="card-footer">
+            <p>Descripcion: {{ obra.descripcion|linebreaksbr }}</p>
+            {% if obra.dimensiones %}
+                <p>Dimensiones: {{ obra.dimensiones }}</p>
+            {% endif %}
+            {% if obra.tipo %}
+                <p>Tipo: {{ obra.tipo }}</p>
+            {% endif %}
         </div>
     </div>
     <hr>
