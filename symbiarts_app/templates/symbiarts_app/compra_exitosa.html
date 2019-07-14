@@ -3,7 +3,7 @@
 {% block title %}Tienda Symbiarts - Compra exitosa!{% endblock %}
 
 {% block content %}
-    <div class="jumbotron text-xs-center">
+    <div class="jumbotron text-xs-center mt-3">
         <h1 class="display-3">¡Gracias por comprar en Symbiarts!</h1>
         <h3>Tu numero de compra es: #{{ nro_compra }}</h3>
         <p class="lead">
@@ -12,6 +12,7 @@
         <hr>
         <p class="lead">
             <a class="btn btn-primary" href="{% url 'symbiarts_app:lista_obras' %}" role="button">Volver a la tienda</a>
+            <a class="btn btn-primary" href="{% url 'symbiarts_app:lista_compras' %}">Ir a compras</a>
         </p>
     </div>
 {% endblock %}

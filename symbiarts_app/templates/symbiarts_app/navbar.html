@@ -38,6 +38,7 @@
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{% url 'my_account' %}">Mi cuenta</a>
                         <a class="dropdown-item" href="{% url 'symbiarts_app:nueva_obra' %}">Nueva Obra</a>
+                        <a class="dropdown-item" href="{% url 'symbiarts_app:lista_compras' %}">Compras</a>
                         <a class="dropdown-item" href="#">Mis Obras</a>
                         {% if user.is_staff %}
                             <a class="dropdown-item" href="{% url 'admin:index' %}">Seccion Admin</a>

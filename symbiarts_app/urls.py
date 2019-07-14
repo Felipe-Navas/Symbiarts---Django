@@ -23,9 +23,14 @@ urlpatterns = [
     path('obra/<int:pk>/editar/', views.editar_obra, name='editar_obra'),
     path('obra/<int:pk>/', views.detalle_obra, name='detalle_obra'),
     path('obra/nueva', views.nueva_obra, name='nueva_obra'),
-    path('obra/<pk>/eliminar/', views.eliminar_obra, name='eliminar_obra'),
-    path('obra/<pk>/comentar/', views.nuevo_comentario,
+    path('obra/<int:pk>/pausar/', views.pausar_obra, name='pausar_obra'),
+    path('obra/<int:pk>/reactivar/', views.reactivar_obra,
+         name='reactivar_obra'),
+    path('obra/<int:pk>/comentar/', views.nuevo_comentario,
          name='nuevo_comentario'),
-    path('comentario/<pk>/eliminar/', views.eliminar_comentario,
+    path('compras/', views.lista_compras, name='lista_compras'),
+    path('compra/<int:compra_id>/', views.detalle_compra,
+         name='detalle_compra'),
+    path('comentario/<int:pk>/eliminar/', views.eliminar_comentario,
          name='eliminar_comentario')
 ]

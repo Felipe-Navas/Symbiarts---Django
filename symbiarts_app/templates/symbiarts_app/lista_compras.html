@@ -1,0 +1,53 @@
+{% extends 'symbiarts_app/base.html' %}
+{% load static %}
+{% block title %}Tienda Symbiarts - Compras{% endblock %}
+
+{% block navbar %}
+    {% include 'symbiarts_app/navbar.html' %}
+{% endblock %}
+
+{% load humanize %}
+
+{% block content %}
+    <ul class="list-group mt-3">
+        <h2>Compras</h2>
+        {% for compra in compras %}
+            <li class="list-group-item lista_compras rounded">
+                <div class="row">
+                    <div class="col-2">
+                        <!-- Hacer un previsualizador de archivos o galeria -->
+                        <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="Smiley face" height="150" width="150">
+                    </div>
+                    <div class="col-8">
+                        <h4>Compraste {{ compra.fecha|naturaltime }} <small class="text-muted">({{compra.fecha}})</small></h4>
+                        {% for detalle in compra.detalle_venta_obra.all %}
+                            {% with obra=detalle.obra %}
+                                {% if obra.pk > 0 %}
+                                    <h5><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></h5>
+                                {% else %}
+                                    <h5>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</h5>
+                                {% endif %}
+                                {% if detalle.cantidad_obra == 1 %}
+                                    <p>Total: $ {{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
+                                {% else %}
+                                    <p>Total: $ {{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
+                                {% endif %}
+                            {% endwith %}
+                        {% endfor %}
+                    </div>
+                    <div class="col-2">
+                        <a href="{% url 'symbiarts_app:detalle_compra' compra_id=compra.id %}" class="btn btn-primary float-right">Detalle</a>
+                    </div>
+                </div>
+            </li>
+        {% empty %}
+            <div class="jumbotron text-xs-center">
+                <h2 class="display-4">Aun no has realizado ninguna compra.</h2>
+                <a class="btn btn-primary" href="{% url 'symbiarts_app:lista_obras' %}" role="button">Volver a la tienda</a>
+            </div>
+        {% endfor %}
+    </ul>
+
+    {% include 'symbiarts_app/paginator.html' with paginator=compras %}
+
+{% endblock %}

@@ -116,10 +116,35 @@ def editar_obra(request, pk):
 
 
 @login_required
-def eliminar_obra(request, pk):
+def pausar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
-    obra.delete()
-    return redirect('symbiarts_app:lista_obras')
+    if request.user == obra.usuario:
+        obra.pausada = True
+        obra.fecha_pausada = timezone.now()
+        obra.save()
+        return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
+    else:
+        mensaje = ("Estimado/a, {}, no puede pausar esta obra porque le "
+                   "pertenece a otro usuario.").format(request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })
+
+
+@login_required
+def reactivar_obra(request, pk):
+    obra = get_object_or_404(Obra, pk=pk)
+    if request.user == obra.usuario:
+        obra.pausada = False
+        obra.fecha_pausada = None
+        obra.save()
+        return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
+    else:
+        mensaje = ("Estimado/a, {}, no puede reactivar esta obra porque le "
+                   "pertenece a otro usuario.").format(request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })
 
 
 @login_required
@@ -312,3 +337,39 @@ def grabar_compra_carrito(request):
     carrito.clear()
     request.session['compra_exitosa'] = True
     return redirect('symbiarts_app:compra_exitosa', nro_compra=venta_obra.id)
+
+
+@login_required
+def lista_compras(request):
+    queryset = VentaObra.objects.filter(
+        cliente=request.user).order_by('-fecha')
+    page = request.GET.get('page')
+    paginator = Paginator(queryset, 5)
+    try:
+        compras = paginator.page(page)
+    except PageNotAnInteger:
+        # Volver a la primera página
+        compras = paginator.page(1)
+    except EmptyPage:
+        # Voy a la ultima página si llega una inexistente
+        compras = paginator.page(paginator.num_pages)
+    formBuscar = FormBuscar()
+    return render(request, 'symbiarts_app/lista_compras.html', {
+        'compras': compras,
+        'formBuscar': formBuscar})
+
+
+@login_required
+def detalle_compra(request, compra_id):
+    compra = get_object_or_404(VentaObra, id=compra_id)
+    if request.user == compra.cliente:
+        formBuscar = FormBuscar()
+        return render(request, 'symbiarts_app/detalle_compra.html', {
+            'compra': compra,
+            'formBuscar': formBuscar})
+    else:
+        mensaje = ("Estimado/a, {}, no puede visualizar esta compra, porque le"
+                   " pertenece a otro usuario.").format(request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })

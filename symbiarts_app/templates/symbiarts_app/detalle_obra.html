@@ -10,8 +10,13 @@
 {% load gravatar %}
 
 {% block content %}
-    <div class="card mt-3 p-3">
-        <div class="row">
+    <div class="card mt-3">
+        {% if obra.pausada == True %}
+            <div class="card-header">
+                <h4 class="card-subtitle mb-2 text-muted"><i class="fas fa-exclamation-circle"></i> Publicación pausada {{ obra.fecha_pausada|naturaltime }}</h4>
+            </div>
+        {% endif %}
+        <div class="row p-3">
             <div class="col-8">
                 {% for archivo_obra in archivos_obra %}
                     <p><a href="{{ archivo_obra.archivo.url }}">{{ archivo_obra.archivo.name }}</a></p>
@@ -41,19 +46,25 @@
                 {% endif %}
                 {% if obra.usuario == user %}
                     <a class="btn btn-outline-secondary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}">Editar</a>
-                    <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:eliminar_obra' pk=obra.pk %}">Eliminar</a>
+                    {% if obra.pausada == True %}
+                        <a class="btn btn-outline-success" href="{% url 'symbiarts_app:reactivar_obra' pk=obra.pk %}">Reactivar</a>
+                    {% else %}
+                        <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:pausar_obra' pk=obra.pk %}">Pausar</a>
+                    {% endif %}
                 {% endif %}
                 {% if obra.fecha_publicacion %}
                     <div class="date mt-2">
                         <p>Publicado el {{ obra.fecha_publicacion }}</p>
                     </div>
                 {% endif %}
-                <form action="{% url 'symbiarts_app:orquestar_compra_carrito' obra.id %}" method="post">
-                    {% csrf_token %}
-                    {{ formCarrito }}
-                    <button type="submit" class="btn btn-outline-primary" name="accion" value="agregar_al_carrito">Agregar al carrito</button>
-                    <button type="submit" class="btn btn-outline-success" name="accion" value="comprar">Comprar</button>
-                </form>
+                {% if obra.pausada == False and obra.usuario != user %}
+                    <form action="{% url 'symbiarts_app:orquestar_compra_carrito' obra.id %}" method="post">
+                        {% csrf_token %}
+                        {{ formCarrito }}
+                        <button type="submit" class="btn btn-outline-primary" name="accion" value="agregar_al_carrito">Agregar al carrito</button>
+                        <button type="submit" class="btn btn-outline-success" name="accion" value="comprar">Comprar</button>
+                    </form>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -86,66 +97,5 @@
         <p>Aun no hay comentarios <i class="far fa-sad-tear"></i></p>
     {% endfor %}
 
-    {% if comentarios.has_other_pages %}
-        <div class="row justify-content-center py-4">
-            <nav aria-label="Paginacion de Comentarios">
-                <ul class="pagination">
-                    {% if comentarios.number > 1 %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1">Primera</a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link">Primera</span>
-                        </li>
-                    {% endif %}
-
-                    {% if comentarios.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ comentarios.previous_page_number }}">&laquo;</a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link">&laquo;</span>
-                        </li>
-                    {% endif %}
-
-                    {% for page_num in comentarios.paginator.page_range %}
-                        {% if comentarios.number == page_num %}
-                            <li class="page-item active">
-                                <span class="page-link">
-                                    {{ page_num }}
-                                    <span class="sr-only">(activo)</span>
-                                </span>
-                            </li>
-                        {% elif page_num > comentarios.number|add:'-5' and page_num < comentarios.number|add:'5' %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if comentarios.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ comentarios.next_page_number }}">&raquo;</a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link">&raquo;</span>
-                        </li>
-                    {% endif %}
-
-                    {% if comentarios.number != comentarios.paginator.num_pages %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ comentarios.paginator.num_pages }}">Ultima</a>
-                            </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link">Ultima</span>
-                            </li>
-                    {% endif %}
-                </ul>
-            </nav>
-        </div>
-    {% endif %}
+    {% include 'symbiarts_app/paginator.html' with paginator=comentarios %}
 {% endblock %}
