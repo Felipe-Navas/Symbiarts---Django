@@ -1,7 +1,7 @@
 {% load bootstrap4 %}
 
 <nav class="navbar navbar-expand-sm fixed-top navbar-dark bg-dark">
-    <a class="navbar-brand" href="/">Tienda<br>Symbiarts</a>
+    <a class="navbar-brand" href="/">Tienda Symbiarts</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -20,8 +20,12 @@
                 {% with totail_items=carrito|length %}
                     {% if carrito|length > 0 %}
                         <a href="{% url 'carrito:detalle_carrito' %}">
-                            <i class="fas fa-shopping-cart fa-2x"></i>
-                            {{ totail_items }} obra{{ totail_items|pluralize }} $ {{ carrito.obtener_precio_total }}
+                            <div style="position: relative;">
+                                <i class="fas fa-shopping-cart fa-2x"></i>
+                                <span class='badge badge-warning'>
+                                    {{ totail_items }}
+                                </span>
+                            </div>
                         </a>
                     {% else %}
                         <a href="{% url 'carrito:detalle_carrito' %}">

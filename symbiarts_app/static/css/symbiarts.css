@@ -26,3 +26,15 @@ body {
 .encabezado {
     height: 86px;
 }
+
+.badge {
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+    vertical-align: top;
+    margin-right: 10px;
+}
+
+p {
+    font-size: 14px;
+}
