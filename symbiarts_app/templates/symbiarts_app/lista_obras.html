@@ -52,66 +52,6 @@
         {% endfor %}
     </div>
 
-    {% if obras.has_other_pages %}
-        <div class="row justify-content-center py-4">
-            <nav aria-label="Paginacion de Obras">
-                <ul class="pagination">
-                    {% if obras.number > 1 %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1">Primera</a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link">Primera</span>
-                        </li>
-                    {% endif %}
+    {% include 'symbiarts_app/paginator.html' with paginator=obras %}
 
-                    {% if obras.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ obras.previous_page_number }}">&laquo;</a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link">&laquo;</span>
-                        </li>
-                    {% endif %}
-
-                    {% for page_num in obras.paginator.page_range %}
-                        {% if obras.number == page_num %}
-                            <li class="page-item active">
-                                <span class="page-link">
-                                    {{ page_num }}
-                                    <span class="sr-only">(activo)</span>
-                                </span>
-                            </li>
-                        {% elif page_num > obras.number|add:'-5' and page_num < obras.number|add:'5' %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if obras.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ obras.next_page_number }}">&raquo;</a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link">&raquo;</span>
-                        </li>
-                    {% endif %}
-
-                    {% if obras.number != obras.paginator.num_pages %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ obras.paginator.num_pages }}">Ultima</a>
-                            </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link">Ultima</span>
-                            </li>
-                    {% endif %}
-                </ul>
-            </nav>
-        </div>
-    {% endif %}
 {% endblock %}

@@ -1,13 +1,16 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Obra, ObraArchivo, Comentario, MetodoPago
+from .models import (Obra, ObraArchivo, Comentario, MetodoPago, VentaObra,
+                     DetalleVentaObra)
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from .forms import FormObra, FormObraArchivos, FormComentario, FormBuscar
+from .forms import (FormObra, FormObraArchivos, FormComentario, FormBuscar,
+                    FormComoPagarObra)
 from carrito.forms import FormAgregarObraCarrito
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from carrito.carrito import Carrito
+from django.conf import settings
 
 
 def lista_obras(request):
@@ -46,7 +49,7 @@ def detalle_obra(request, pk):
         comentarios = paginator.page(paginator.num_pages)
 
     formComentario = FormComentario()
-    formCarrito = FormAgregarObraCarrito()
+    formCarrito = FormAgregarObraCarrito(stock=obra.obtener_stock())
     formBuscar = FormBuscar()
     return render(request, 'symbiarts_app/detalle_obra.html', {
         'obra': obra,
@@ -113,10 +116,35 @@ def editar_obra(request, pk):
 
 
 @login_required
-def eliminar_obra(request, pk):
+def pausar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
-    obra.delete()
-    return redirect('symbiarts_app:lista_obras')
+    if request.user == obra.usuario:
+        obra.pausada = True
+        obra.fecha_pausada = timezone.now()
+        obra.save()
+        return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
+    else:
+        mensaje = ("Estimado/a, {}, no puede pausar esta obra porque le "
+                   "pertenece a otro usuario.").format(request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })
+
+
+@login_required
+def reactivar_obra(request, pk):
+    obra = get_object_or_404(Obra, pk=pk)
+    if request.user == obra.usuario:
+        obra.pausada = False
+        obra.fecha_pausada = None
+        obra.save()
+        return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
+    else:
+        mensaje = ("Estimado/a, {}, no puede reactivar esta obra porque le "
+                   "pertenece a otro usuario.").format(request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })
 
 
 @login_required
@@ -180,17 +208,23 @@ def buscar_obras(request):
 
 @require_POST
 def orquestar_compra_carrito(request, obra_id):
-    formCarrito = FormAgregarObraCarrito(request.POST)
+    obra = get_object_or_404(Obra, pk=obra_id)
+    formCarrito = FormAgregarObraCarrito(request.POST,
+                                         stock=obra.obtener_stock())
     if formCarrito.is_valid():
         cantidad_obras = formCarrito.cleaned_data.get("cantidad")
         metodos_pago = MetodoPago.objects.order_by('nombre')
-        obra = get_object_or_404(Obra, pk=obra_id)
         accion = formCarrito.cleaned_data.get("accion")
         if accion == 'comprar':
+            request.session['cantidad_obras'] = cantidad_obras
+            formComoPagarObra = FormComoPagarObra()
+            precio_total = cantidad_obras * obra.precio
             return render(request, 'symbiarts_app/como_pagar_obra.html', {
                 'obra': obra,
                 'metodos_pago': metodos_pago,
-                'cantidad_obras': cantidad_obras})
+                'cantidad_obras': cantidad_obras,
+                'precio_total': precio_total,
+                'formComoPagarObra': formComoPagarObra})
         elif accion == 'agregar_al_carrito':
             carrito = Carrito(request)
             act_cantidad = formCarrito.cleaned_data.get('actualizar_cantidad')
@@ -200,3 +234,142 @@ def orquestar_compra_carrito(request, obra_id):
                 actualizar_cantidad=act_cantidad
                 )
             return redirect('carrito:detalle_carrito')
+
+
+@require_POST
+def confirmar_compra(request, obra_id):
+    obra = get_object_or_404(Obra, id=obra_id)
+    formComoPagarObra = FormComoPagarObra(request.POST)
+    if formComoPagarObra.is_valid():
+        metodo_pago_elegido = formComoPagarObra.cleaned_data.get('metodoPago')
+        request.session['metodo_pago_elegido'] = metodo_pago_elegido
+        cantidad_obras = request.session['cantidad_obras']
+        precio_total = cantidad_obras * obra.precio
+        return render(request, 'symbiarts_app/confirmar_compra.html', {
+            'obra': obra,
+            'cantidad_obras': cantidad_obras,
+            'precio_total': precio_total,
+            'metodo_pago_elegido': metodo_pago_elegido})
+
+
+@login_required
+@require_POST
+def grabar_compra(request, obra_id):
+    obra = get_object_or_404(Obra, id=obra_id)
+    metodo_pago_elegido = request.session['metodo_pago_elegido']
+    cantidad_obras = request.session['cantidad_obras']
+    metodo_pago = MetodoPago.objects.filter(nombre=metodo_pago_elegido).first()
+    venta_obra = VentaObra.objects.create(
+        cliente=request.user,
+        metodo_pago=metodo_pago)
+
+    DetalleVentaObra.objects.create(
+        venta_obra=venta_obra,
+        obra=obra,
+        precio_obra=obra.precio,
+        cantidad_obra=cantidad_obras)
+    obra.stock -= cantidad_obras
+    obra.save()
+    request.session['compra_exitosa'] = True
+    return redirect('symbiarts_app:compra_exitosa', nro_compra=venta_obra.id)
+
+
+@login_required
+def compra_exitosa(request, nro_compra):
+    if request.session['compra_exitosa'] == True:
+        request.session['compra_exitosa'] = False
+        return render(request, 'symbiarts_app/compra_exitosa.html', {
+            'nro_compra': nro_compra
+            })
+    else:
+        return redirect('symbiarts_app:lista_obras')
+
+
+def comprar_carrito(request):
+    carrito = Carrito(request)
+    precio_total = carrito.obtener_precio_total()
+    cantidad_obras_carrito = carrito.__len__()
+    metodos_pago = MetodoPago.objects.order_by('nombre')
+    formComoPagarObra = FormComoPagarObra()
+    return render(request, 'symbiarts_app/como_pagar_carrito.html', {
+        'metodos_pago': metodos_pago,
+        'cantidad_obras_carrito': cantidad_obras_carrito,
+        'formComoPagarObra': formComoPagarObra,
+        'precio_total': precio_total})
+
+
+@require_POST
+def confirmar_compra_carrito(request):
+    carrito = Carrito(request)
+    formComoPagarObra = FormComoPagarObra(request.POST)
+    if formComoPagarObra.is_valid():
+        metodo_pago_elegido = formComoPagarObra.cleaned_data.get('metodoPago')
+        request.session['metodo_pago_elegido'] = metodo_pago_elegido
+        return render(request, 'symbiarts_app/confirmar_compra_carrito.html', {
+            'carrito': carrito,
+            'metodo_pago_elegido': metodo_pago_elegido,
+            })
+
+
+@login_required
+@require_POST
+def grabar_compra_carrito(request):
+    carrito = request.session.get(settings.CARRITO_SESSION_ID)
+    metodo_pago_elegido = request.session['metodo_pago_elegido']
+    metodo_pago = MetodoPago.objects.filter(nombre=metodo_pago_elegido).first()
+
+    venta_obra = VentaObra.objects.create(
+        cliente=request.user,
+        metodo_pago=metodo_pago)
+
+    obra_ids = carrito.keys()
+    obras = Obra.objects.filter(id__in=obra_ids)
+    for obra in obras:
+        cantidad_obras = carrito[str(obra.id)]['cantidad']
+        DetalleVentaObra.objects.create(
+            venta_obra=venta_obra,
+            obra=obra,
+            precio_obra=obra.precio,
+            cantidad_obra=cantidad_obras)
+        obra.stock -= cantidad_obras
+        obra.save()
+
+    carrito.clear()
+    request.session['compra_exitosa'] = True
+    return redirect('symbiarts_app:compra_exitosa', nro_compra=venta_obra.id)
+
+
+@login_required
+def lista_compras(request):
+    queryset = VentaObra.objects.filter(
+        cliente=request.user).order_by('-fecha')
+    page = request.GET.get('page')
+    paginator = Paginator(queryset, 5)
+    try:
+        compras = paginator.page(page)
+    except PageNotAnInteger:
+        # Volver a la primera página
+        compras = paginator.page(1)
+    except EmptyPage:
+        # Voy a la ultima página si llega una inexistente
+        compras = paginator.page(paginator.num_pages)
+    formBuscar = FormBuscar()
+    return render(request, 'symbiarts_app/lista_compras.html', {
+        'compras': compras,
+        'formBuscar': formBuscar})
+
+
+@login_required
+def detalle_compra(request, compra_id):
+    compra = get_object_or_404(VentaObra, id=compra_id)
+    if request.user == compra.cliente:
+        formBuscar = FormBuscar()
+        return render(request, 'symbiarts_app/detalle_compra.html', {
+            'compra': compra,
+            'formBuscar': formBuscar})
+    else:
+        mensaje = ("Estimado/a, {}, no puede visualizar esta compra, porque le"
+                   " pertenece a otro usuario.").format(request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })

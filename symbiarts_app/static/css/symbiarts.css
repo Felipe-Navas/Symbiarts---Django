@@ -2,10 +2,6 @@ body {
     background-image: url(../img/white_wall_hash.png);
 }
 
-.content {
-    padding-top: 56px;
-}
-
 .lista_obras {
     margin-right: 20px;
     margin-top: 20px;
@@ -21,4 +17,12 @@ body {
 
 .fecha_comment{
     text-align: right;
+}
+
+.lista_compras {
+    margin-bottom: 20px;
+}
+
+.encabezado {
+    height: 86px;
 }
