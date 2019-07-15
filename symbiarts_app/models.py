@@ -1,6 +1,7 @@
+from decimal import Decimal
 from django.db import models
-from django.utils import timezone
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class Categoria(models.Model):
@@ -56,7 +57,14 @@ class Obra(models.Model):
         choices=tipos_obra,
         default='AW')
 
+    pausada = models.BooleanField(default=False)
+
+    fecha_pausada = models.DateTimeField(default=None, null=True, blank=True)
+
     # tags
+
+    def obtener_stock(self):
+        return self.stock
 
     def __str__(self):
         return self.nombre
@@ -93,8 +101,20 @@ class VentaObra(models.Model):
         MetodoPago, on_delete=models.SET_NULL, null=True)
     fecha = models.DateTimeField(default=timezone.now)
 
+    def cantidad_obras(self):
+        return sum(
+            detalle['cantidad_obra']
+            for detalle in self.detalle_venta_obra.values()
+            )
+
+    def precio_total(self):
+        return sum(
+            Decimal(detalle['precio_obra'] * detalle['cantidad_obra'])
+            for detalle in self.detalle_venta_obra.values()
+            )
+
     def __str__(self):
-        return self.pk
+        return "Venta {}".format(self.pk)
 
 
 class DetalleVentaObra(models.Model):
@@ -106,5 +126,8 @@ class DetalleVentaObra(models.Model):
         decimal_places=2)
     cantidad_obra = models.IntegerField()
 
+    def precio_total(self):
+        return self.precio_obra * self.cantidad_obra
+
     def __str__(self):
-        return self.pk
+        return "Detalle {}".format(self.pk)

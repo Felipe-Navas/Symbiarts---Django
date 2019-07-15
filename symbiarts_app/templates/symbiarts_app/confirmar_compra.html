@@ -1,0 +1,43 @@
+{% extends 'symbiarts_app/base.html' %}
+{% load static %}
+{% block title %}Tienda Symbiarts - Confirmar Compra{% endblock %}
+
+{% block navbar %}
+    {% include 'symbiarts_app/navbar.html' %}
+{% endblock %}
+
+{% block content %}
+    <div class="card mt-3 p-3">
+        <div class="row">
+            <div class="col-8">
+                <h2>Revisá y confirmá tu compra</h2>
+
+                <h3>Detalle del envío</h3>
+                <li class="list-group-item">Envío acordar con el vendedor</li>
+
+                <h3>Detalle del pago</h3>
+                <li class="list-group-item">{{ metodo_pago_elegido }}</li>
+
+                <h3>Datos de facturación</h3>
+                <li class="list-group-item">{{ user.username }}</li>
+
+            </div>
+            <div class="col-4">
+                <!-- Agregar imagen principal de obra -->
+                <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="Smiley face" height="60" width="60">
+                <h2>{{ obra.nombre }}</h2>
+                <p>Cantidad: {{ cantidad_obras }}</p>
+                <p>Categoria: {{ obra.categoria }}</p>
+                <p>Envío: Acordar con el vendedor</p>
+
+                <p>Precio: {{ obra.precio }}</p>
+                <p>Total: {{ precio_total}}</p>
+
+                <form action="{% url 'symbiarts_app:grabar_compra' obra.id %}" method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-success">Confirmar Compra</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% if paginator.has_other_pages %}
+    <div class="row justify-content-center py-4">
+        <nav>
+            <ul class="pagination">
+                {% if paginator.number > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">Primera</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Primera</span>
+                    </li>
+                {% endif %}
+
+                {% if paginator.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ paginator.previous_page_number }}">&laquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                {% endif %}
+
+                {% for page_num in paginator.paginator.page_range %}
+                    {% if paginator.number == page_num %}
+                        <li class="page-item active">
+                            <span class="page-link">
+                                {{ page_num }}
+                                <span class="sr-only">(activo)</span>
+                            </span>
+                        </li>
+                    {% elif page_num > paginator.number|add:'-5' and page_num < paginator.number|add:'5' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if paginator.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ paginator.next_page_number }}">&raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                {% endif %}
+
+                {% if paginator.number != paginator.paginator.num_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ paginator.paginator.num_pages }}">Ultima</a>
+                        </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Ultima</span>
+                        </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+{% endif %}

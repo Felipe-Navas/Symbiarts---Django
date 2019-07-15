@@ -1,0 +1,20 @@
+{% extends 'symbiarts_app/base.html' %}
+{% load static %}
+{% block title %}Tienda Symbiarts{% endblock %}
+
+{% block navbar %}
+    {% include 'symbiarts_app/navbar.html' %}
+{% endblock %}
+
+{% block content %}
+    <div class="jumbotron text-xs-center mt-3">
+        <h1 class="display-3">¡Ups, ha ocurrido un error!</h1>
+        <p class="lead">
+            <strong>{{ mensaje }}</strong>
+        </p>
+        <hr>
+        <p class="lead">
+            <a class="btn btn-primary" href="{% url 'symbiarts_app:lista_obras' %}" role="button">Volver a la tienda</a>
+        </p>
+    </div>
+{% endblock %}

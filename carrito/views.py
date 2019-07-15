@@ -10,7 +10,8 @@ from .forms import FormAgregarObraCarrito
 def agregar_obra_carrito(request, obra_id):
     carrito = Carrito(request)
     obra = get_object_or_404(Obra, id=obra_id)
-    form = FormAgregarObraCarrito(request.POST)
+    form = FormAgregarObraCarrito(request.POST,
+                                  stock=obra.obtener_stock())
     if form.is_valid():
         cd = form.cleaned_data
         carrito.agregar_obra(
@@ -31,9 +32,12 @@ def eliminar_obra_carrito(request, obra_id):
 def detalle_carrito(request):
     carrito = Carrito(request)
     for item in carrito:
-        item['form_agregar_obra_carrito'] = FormAgregarObraCarrito(
-            initial={'cantidad': item['cantidad'], 'actualizar_cantidad': True}
-            )
+        stock = item['obra'].stock
+        formAgregarObraCarrito = FormAgregarObraCarrito(
+            stock=stock)
+        formAgregarObraCarrito.fields['cantidad'].initial = item['cantidad']
+        formAgregarObraCarrito.fields['actualizar_cantidad'].initial = True
+        item['form_agregar_obra_carrito'] = formAgregarObraCarrito
     formBuscar = FormBuscar()
     return render(request, 'carrito/detalle_carrito.html', {
         'carrito': carrito,
