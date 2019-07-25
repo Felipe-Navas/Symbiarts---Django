@@ -9,10 +9,10 @@
 {% load humanize %}
 
 {% block content %}
-    <h2>Compra #{{ compra.id }} <small class="text-muted">{{ compra.fecha }}</small></h2>
+    <h2 class="mt-3">Compra #{{ compra.id }} <small class="text-muted">{{ compra.fecha }}</small></h2>
         <div class="row">
             <div class="col-8">
-                <div class="card">
+                <div class="card p-3">
                     <h4>Resumen de compra</h4>
                     <table>
                         <tbody>
@@ -24,35 +24,48 @@
                                     <p>$ {{ compra.precio_total }}</p>
                                 </td>
                             </tr>
-                            <tr>
-                                <td></td>
-                                <td class="text-right"></td>
+                            <tr style="border-top: 1px solid rgba(0,0,0,.125);">
+                                <td>{{ compra.metodo_pago.nombre }}</td>
+                                <td class="text-right">
+                                    <p>$ {{ compra.precio_total }}</p>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="card mt-2">
+                <div class="card mt-2 p-3">
                     <h4>Detalle de facturacion</h4>
+                    <p>{{ compra.cliente.username }}</p>
                 </div>
             </div>
-            <div class="col-4">
-                <div class="card">
+            <div class="col-4 p-0">
+                <div class="card p-3">
+                    <h4>Compraste</h4>
                     {% for detalle in compra.detalle_venta_obra.all %}
-                        {% with obra=detalle.obra %}
-                            <h4>Compraste</h4>
-                            <!-- Hacer un previsualizador de archivos o galeria -->
-                            <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="Smiley face" height="150" width="150">
-                            {% if obra.pk > 0 %}
-                                <h5><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></h5>
-                            {% else %}
-                                <h5>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</h5>
-                            {% endif %}
-                            {% if detalle.cantidad_obra == 1 %}
-                                <p>Total: $ {{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
-                            {% else %}
-                                <p>Total: $ {{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
-                            {% endif %}
-                        {% endwith %}
+                        {% if forloop.counter > 1 %}
+                            <hr class="m-0">
+                        {% endif %}
+                        <div class="row">
+                            {% with obra=detalle.obra %}
+                                <div class="col">
+                                    <!-- Hacer un previsualizador de archivos o galeria -->
+                                    <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="Smiley face" height="150" width="150">
+                                </div>
+                                <div class="col">
+                                    {% if obra.pk > 0 %}
+                                        <a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a>
+                                    {% else %}
+                                        <p>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</p>
+                                    {% endif %}
+                                    {% if detalle.cantidad_obra == 1 %}
+                                        <p>Total: $ {{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
+                                    {% else %}
+                                        <p>Total: $ {{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
+                                    {% endif %}
+                                    <p>Vendedor: <a href="">{{ obra.usuario.username }}</a></p>
+                                </div>
+                            {% endwith %}
+                        </div>
                     {% endfor %}
                 </div>
             </div>

@@ -29,53 +29,57 @@
             {% endif %}
         {% endwith %}
         {% if carrito|length > 0 %}
-            <table class="table table-responsive table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Imagen</th>
-                        <th>Obra</th>
-                        <th>Cantidad</th>
-                        <th>Eliminar</th>
-                        <th>Precio unitario</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for item in carrito %}
-                    {% with obra=item.obra  %}
+            <div class="row">
+                <table class="table table-hover">
+                    <thead class="thead-dark">
                         <tr>
-                            <td>
-                                <a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">
-                                    <img src="{% static '/img/default.svg' %}"
-                                        alt="..." style="height: 90px; width: auto">
-                                </a>
-                            </td>
-                            <td>{{ obra.nombre }}</td>
-                            <td>
-                                <form action="{% url 'carrito:agregar_obra_carrito' obra.id %}" method="post">
-                                    {% csrf_token %}
-                                    {{ item.form_agregar_obra_carrito.cantidad }}
-                                    {{ item.form_agregar_obra_carrito.actualizar_cantidad }}
-                                    <button type="submit" class="btn btn-info"><i class="fas fa-sync-alt"></i></button>
-                                </form>
-                            </td>
-                            <td>
-                                <a href="{% url 'carrito:eliminar_obra_carrito' obra.id %}">Eliminar</a>
-                            </td>
-                            <td>$ {{ item.precio }}</td>
-                            <td>$ {{ item.precio_total }}</td>
+                            <th>Imagen</th>
+                            <th>Obra</th>
+                            <th>Cantidad</th>
+                            <th>Eliminar</th>
+                            <th>Precio unitario</th>
+                            <th>Subtotal</th>
                         </tr>
-                    {% endwith %}
-                {% endfor %}
-                <tr class="table-dark">
-                    <td><b>Total</b></td>
-                    <td colspan="4"></td>
-                    <td colspan="num"><b>$ {{ carrito.obtener_precio_total }}</b></td>
-                </tr>
-                </tbody>
-            </table>
-            <a href="{% url 'symbiarts_app:lista_obras' %}" class="btn btn-primary">Seguir comprando</a>
-            <a href="{% url 'symbiarts_app:comprar_carrito' %}" class="btn btn-success">Comprar</a>
+                    </thead>
+                    <tbody>
+                    {% for item in carrito %}
+                        {% with obra=item.obra  %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">
+                                        <img src="{% static '/img/default.svg' %}"
+                                            alt="..." style="height: 90px; width: auto">
+                                    </a>
+                                </td>
+                                <td>{{ obra.nombre }}</td>
+                                <td>
+                                    <form action="{% url 'carrito:agregar_obra_carrito' obra.id %}" method="post">
+                                        {% csrf_token %}
+                                        {{ item.form_agregar_obra_carrito.cantidad }}
+                                        {{ item.form_agregar_obra_carrito.actualizar_cantidad }}
+                                        <button type="submit" class="btn btn-info"><i class="fas fa-sync-alt"></i></button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <a href="{% url 'carrito:eliminar_obra_carrito' obra.id %}">Eliminar</a>
+                                </td>
+                                <td>$ {{ item.precio }}</td>
+                                <td>$ {{ item.precio_total }}</td>
+                            </tr>
+                        {% endwith %}
+                    {% endfor %}
+                    <tr class="table-active">
+                        <td><b>Total</b></td>
+                        <td colspan="4"></td>
+                        <td colspan="num"><b>$ {{ carrito.obtener_precio_total }}</b></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="form-group">
+                    <a href="{% url 'symbiarts_app:lista_obras' %}" class="btn btn-primary">Seguir comprando</a>
+                    <a href="{% url 'symbiarts_app:comprar_carrito' %}" class="btn btn-success">Comprar</a>
+                </div>
+            </div>
         {% endif %}
     </div>
 {% endblock %}
