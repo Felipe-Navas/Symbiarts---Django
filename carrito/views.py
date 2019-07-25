@@ -10,6 +10,13 @@ from .forms import FormAgregarObraCarrito
 def agregar_obra_carrito(request, obra_id):
     carrito = Carrito(request)
     obra = get_object_or_404(Obra, id=obra_id)
+    if request.user == obra.usuario:
+        mensaje = ("Estimado/a, {}, no puede agregar al carrito esta obra"
+                   " porque le pertenece a usted mismo!.").format(
+                   request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })
     form = FormAgregarObraCarrito(request.POST,
                                   stock=obra.obtener_stock())
     if form.is_valid():

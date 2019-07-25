@@ -2,11 +2,6 @@ body {
     background-image: url(../img/white_wall_hash.png);
 }
 
-.lista_obras {
-    margin-right: 20px;
-    margin-top: 20px;
-}
-
 .date {
     color: #585858;
 }
@@ -24,7 +19,7 @@ body {
 }
 
 .encabezado {
-    height: 86px;
+    height: 56px;
 }
 
 .badge {
@@ -37,4 +32,8 @@ body {
 
 p {
     font-size: 14px;
+}
+
+.detalle_comprar {
+    border-left: 1px solid rgba(0,0,0,.125);
 }

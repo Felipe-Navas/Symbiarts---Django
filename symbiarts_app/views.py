@@ -87,6 +87,12 @@ def nueva_obra(request):
 @login_required
 def editar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
+    if request.user != obra.usuario:
+        mensaje = ("Estimado/a, {}, no puede editar esta obra porque le "
+                   "pertenece a otro usuario.").format(request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })
 #    obra_archivo = ObraArchivo.objects.filter(obra__pk=pk)
     if request.method == "POST":
         form = FormObra(request.POST, instance=obra)
@@ -165,6 +171,13 @@ def nuevo_comentario(request, pk):
 @login_required
 def eliminar_comentario(request, pk):
     comentario = get_object_or_404(Comentario, pk=pk)
+    if request.user != comentario.usuario:
+        mensaje = ("Estimado/a, {}, no puede eliminar este comentario porque "
+                   " le pertenece a otro usuario.").format(
+                   request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })
     comentario.delete()
     return redirect('symbiarts_app:detalle_obra',
                     pk=comentario.obra.pk)
@@ -209,6 +222,12 @@ def buscar_obras(request):
 @require_POST
 def orquestar_compra_carrito(request, obra_id):
     obra = get_object_or_404(Obra, pk=obra_id)
+    if request.user == obra.usuario:
+        mensaje = ("Estimado/a, {}, no puede comprar esta obra porque le "
+                   "pertenece a usted mismo!.").format(request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })
     formCarrito = FormAgregarObraCarrito(request.POST,
                                          stock=obra.obtener_stock())
     if formCarrito.is_valid():
@@ -239,6 +258,12 @@ def orquestar_compra_carrito(request, obra_id):
 @require_POST
 def confirmar_compra(request, obra_id):
     obra = get_object_or_404(Obra, id=obra_id)
+    if request.user == obra.usuario:
+        mensaje = ("Estimado/a, {}, no puede comprar esta obra porque le "
+                   "pertenece a usted mismo!.").format(request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })
     formComoPagarObra = FormComoPagarObra(request.POST)
     if formComoPagarObra.is_valid():
         metodo_pago_elegido = formComoPagarObra.cleaned_data.get('metodoPago')
@@ -253,9 +278,14 @@ def confirmar_compra(request, obra_id):
 
 
 @login_required
-@require_POST
 def grabar_compra(request, obra_id):
     obra = get_object_or_404(Obra, id=obra_id)
+    if request.user == obra.usuario:
+        mensaje = ("Estimado/a, {}, no puede comprar esta obra porque le "
+                   "pertenece a usted mismo!.").format(request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })
     metodo_pago_elegido = request.session['metodo_pago_elegido']
     cantidad_obras = request.session['cantidad_obras']
     metodo_pago = MetodoPago.objects.filter(nombre=metodo_pago_elegido).first()
@@ -312,7 +342,6 @@ def confirmar_compra_carrito(request):
 
 
 @login_required
-@require_POST
 def grabar_compra_carrito(request):
     carrito = request.session.get(settings.CARRITO_SESSION_ID)
     metodo_pago_elegido = request.session['metodo_pago_elegido']
