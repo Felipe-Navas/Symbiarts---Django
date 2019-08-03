@@ -24,7 +24,7 @@ body {
 }
 
 .encabezado {
-    height: 86px;
+    height: 56px;
 }
 
 .badge {
@@ -37,6 +37,10 @@ body {
 
 p {
     font-size: 14px;
+}
+
+.detalle_comprar {
+    border-left: 1px solid rgba(0,0,0,.125);
 }
 
 #myCarousel .list-inline {
