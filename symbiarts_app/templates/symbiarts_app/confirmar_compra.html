@@ -23,15 +23,20 @@
 
             </div>
             <div class="col-4">
-                <!-- Agregar imagen principal de obra -->
-                <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="Smiley face" height="60" width="60">
+                {% with archivo_obra=obra.archivos.first %}
+                    {% if archivo_obra.archivo.url %}
+                        <img src="{{ archivo_obra.archivo.url }}" class="img-fluid" alt="{{ obra.nombre }}">
+                    {% else %}
+                        <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}">
+                    {% endif %}
+                {% endwith %}
                 <h2>{{ obra.nombre }}</h2>
                 <p>Cantidad: {{ cantidad_obras }}</p>
                 <p>Categoria: {{ obra.categoria }}</p>
                 <p>Envío: Acordar con el vendedor</p>
 
-                <p>Precio: {{ obra.precio }}</p>
-                <p>Total: {{ precio_total}}</p>
+                <p>Precio: ${{ obra.precio }}</p>
+                <p>Total: ${{ precio_total}}</p>
 
                 <form action="{% url 'symbiarts_app:grabar_compra' obra.id %}" method="post">
                     {% csrf_token %}

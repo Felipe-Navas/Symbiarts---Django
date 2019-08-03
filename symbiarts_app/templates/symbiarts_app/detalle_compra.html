@@ -21,7 +21,7 @@
                                     <p>Obras ({{ compra.cantidad_obras }})</p>
                                 </td>
                                 <td class="text-right">
-                                    <p>$ {{ compra.precio_total }}</p>
+                                    <p>${{ compra.precio_total }}</p>
                                 </td>
                             </tr>
                             <tr style="border-top: 1px solid rgba(0,0,0,.125);">
@@ -48,21 +48,25 @@
                         <div class="row">
                             {% with obra=detalle.obra %}
                                 <div class="col">
-                                    <!-- Hacer un previsualizador de archivos o galeria -->
-                                    <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="Smiley face" height="150" width="150">
+                                    {% with archivo_obra=obra.archivos.first %}
+                                        {% if archivo_obra.archivo.url %}
+                                            <img src="{{ archivo_obra.archivo.url }}" class="img-fluid" alt="{{ obra.nombre }}">
+                                        {% else %}
+                                            <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}">
+                                        {% endif %}
+                                    {% endwith %}
                                 </div>
                                 <div class="col">
                                     {% if obra.pk > 0 %}
-                                        <a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a>
+                                        <h5><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></h5>
                                     {% else %}
-                                        <p>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</p>
+                                        <h5>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</h5>
                                     {% endif %}
                                     {% if detalle.cantidad_obra == 1 %}
-                                        <p>Total: $ {{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
+                                        <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
                                     {% else %}
-                                        <p>Total: $ {{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
+                                        <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
                                     {% endif %}
-                                    <p>Vendedor: <a href="">{{ obra.usuario.username }}</a></p>
                                 </div>
                             {% endwith %}
                         </div>

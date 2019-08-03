@@ -8,6 +8,8 @@
 
 {% load humanize %}
 {% load gravatar %}
+{% load bootstrap4 %}
+{% bootstrap_javascript jquery='full' %}
 
 {% block content %}
     <div class="card mt-3">
@@ -23,15 +25,54 @@
                         <p><a href="{{ archivo_obra.archivo.url }}">{{ archivo_obra.archivo.name }}</a></p>
                     {% endfor %}
                 {% endif %}
-                <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="Smiley face" height="430" width="590">
+                <div id="myCarousel" class="carousel">
+                    <!-- main slider carousel items -->
+                    <div class="carousel-inner">
+                        {% for archivo_obra in archivos_obra %}
+                            {% if forloop.first %}
+                                <div class="active carousel-item" data-slide-number="{{ forloop.counter0 }}">
+                            {% else %}
+                                <div class="carousel-item" data-slide-number="{{ forloop.counter0 }}">
+                            {% endif %}
+                            <img src="{{ archivo_obra.archivo.url }}" class="img-responsive mx-auto d-block" height="350">
+                            </div>
+                        {% endfor %}
+
+                        <a class="carousel-control-prev" href="#myCarousel" role="button" data-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="carousel-control-next" href="#myCarousel" role="button" data-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+                    <!-- main slider carousel nav controls -->
+                    <ul class="carousel-indicators list-inline mx-auto">
+                        {% for archivo_obra in archivos_obra %}
+                            {% if forloop.first %}
+                                <li class="list-inline-item active align-self-center">
+                                <a id="carousel-selector-{{ forloop.counter0 }}" class="selected" data-slide-to="{{ forloop.counter0 }}" data-target="#myCarousel">
+                            {% else %}
+                                <li class="list-inline-item align-self-center">
+                                <a id="carousel-selector-{{ forloop.counter0 }}" data-slide-to="{{ forloop.counter0 }}" data-target="#myCarousel">
+                            {% endif %}
+                            <img src="{{ archivo_obra.archivo.url }}" class="img-thumbnail mx-auto d-block" height="70" width="70">
+                            </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
             <div class="detalle_comprar col-4">
-                <h2>{{ obra.nombre }}</h2>
-                {% if obra.categoria %}
-                    <p>Categoria: {{ obra.categoria }}</p>
+                <h1>{{ obra.nombre }}</h1>
+                {% if obra.fecha_publicacion %}
+                    <div class="mt-2">
+                        <p class="text-muted">En venta desde el {{ obra.fecha_publicacion }}</p>
+                    </div>
                 {% endif %}
                 {% if obra.precio %}
-                    <p>Precio: {{ obra.precio }}</p>
+                    <p class="display-4">${{ obra.precio }}</p>
                 {% endif %}
                 {% if obra.usuario == user %}
                     <a class="btn btn-outline-secondary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}">Editar</a>
@@ -41,22 +82,27 @@
                         <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:pausar_obra' pk=obra.pk %}">Pausar</a>
                     {% endif %}
                 {% endif %}
-                {% if obra.fecha_publicacion %}
-                    <div class="date mt-2">
-                        <p>Publicado el {{ obra.fecha_publicacion }}</p>
-                    </div>
-                {% endif %}
                 {% if obra.pausada == False and obra.usuario != user %}
-                    <form action="{% url 'symbiarts_app:orquestar_compra_carrito' obra.id %}" method="post">
+                    <form class="form-inline" action="{% url 'symbiarts_app:orquestar_compra_carrito' obra.id %}" method="post">
                         {% csrf_token %}
-                        {{ formCarrito }}
-                        <button type="submit" class="btn btn-outline-primary" name="accion" value="agregar_al_carrito">Agregar al carrito</button>
-                        <button type="submit" class="btn btn-outline-success" name="accion" value="comprar">Comprar</button>
+                        {% bootstrap_messages %}
+                        {% bootstrap_form_errors formCarrito %}
+                        <div class="form-row mb-2">
+                            <label class="mr-2" for="id_cantidad">Cantidad</label>
+                            {% bootstrap_field formCarrito.cantidad show_label=False %}
+                        </div>
+                        <div class="form-row">
+                            <button type="submit" class="btn btn-outline-success" name="accion" value="comprar">Comprar</button>
+                            <button type="submit" class="btn btn-outline-primary ml-2" name="accion" value="agregar_al_carrito">Agregar al carrito</button>
+                        </div>
                     </form>
                 {% endif %}
             </div>
         </div>
         <div class="card-footer">
+            {% if obra.categoria %}
+                <p>Categoria: {{ obra.categoria }}</p>
+            {% endif %}
             <p>Descripcion: {{ obra.descripcion|linebreaksbr }}</p>
             {% if obra.dimensiones %}
                 <p>Dimensiones: {{ obra.dimensiones }}</p>
