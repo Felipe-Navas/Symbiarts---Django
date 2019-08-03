@@ -7,18 +7,15 @@
     {% include 'symbiarts_app/navbar.html' %}
 {% endblock %}
 
+{% load bootstrap4 %}
+{% bootstrap_javascript jquery='full' %}
+
 {% block content %}
     <div class="mt-3">
         {% with totail_items=carrito|length %}
             {% if carrito|length > 0 %}
                 <div class="row">
-                    <h2>Carrito de compras
-                        <span class="badge pull-right">
-                            <a href="{% url 'carrito:detalle_carrito' %}">
-                                {{ totail_items }} obra{{ totail_items|pluralize }} $ {{ carrito.obtener_precio_total }}
-                            </a>
-                        </span>
-                    </h2>
+                    <h2>Carrito de compras</h2>
                 </div>
             {% else %}
                 <div class="jumbotron text-xs-center">
@@ -32,10 +29,9 @@
             <table class="table table-responsive table-hover">
                 <thead class="table-dark">
                     <tr>
-                        <th>Imagen</th>
                         <th>Obra</th>
+                        <th>Descripción</th>
                         <th>Cantidad</th>
-                        <th>Eliminar</th>
                         <th>Precio unitario</th>
                         <th>Subtotal</th>
                     </tr>
@@ -46,31 +42,36 @@
                         <tr>
                             <td>
                                 <a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">
-                                    <img src="{% static '/img/default.svg' %}"
-                                        alt="..." style="height: 90px; width: auto">
+                                    {% with archivo_obra=obra.archivos.first %}
+                                        {% if archivo_obra.archivo.url %}
+                                            <img src="{{ archivo_obra.archivo.url }}" alt="{{ obra.nombre }}" class="img-fluid" style="height: 90px; width: auto">
+                                        {% else %}
+                                            <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}">
+                                        {% endif %}
+                                    {% endwith %}
                                 </a>
                             </td>
                             <td>{{ obra.nombre }}</td>
                             <td>
-                                <form action="{% url 'carrito:agregar_obra_carrito' obra.id %}" method="post">
+                                <form class="form-inline" action="{% url 'carrito:agregar_obra_carrito' obra.id %}" method="post">
                                     {% csrf_token %}
-                                    {{ item.form_agregar_obra_carrito.cantidad }}
-                                    {{ item.form_agregar_obra_carrito.actualizar_cantidad }}
-                                    <button type="submit" class="btn btn-info"><i class="fas fa-sync-alt"></i></button>
+                                    {% bootstrap_messages %}
+                                    {% bootstrap_form_errors item.form_agregar_obra_carrito %}
+                                    {% bootstrap_field item.form_agregar_obra_carrito.cantidad show_label=False %}
+                                    {% bootstrap_field item.form_agregar_obra_carrito.actualizar_cantidad %}
+                                    <button type="submit" class="btn btn-info ml-2"><i class="fas fa-sync-alt"></i></button>
+                                    <a href="{% url 'carrito:eliminar_obra_carrito' obra.id %}" class="btn btn-danger ml-2"><i class="far fa-trash-alt"></i></a>
                                 </form>
                             </td>
-                            <td>
-                                <a href="{% url 'carrito:eliminar_obra_carrito' obra.id %}">Eliminar</a>
-                            </td>
-                            <td>$ {{ item.precio }}</td>
-                            <td>$ {{ item.precio_total }}</td>
+                            <td>${{ item.precio }}</td>
+                            <td>${{ item.precio_total }}</td>
                         </tr>
                     {% endwith %}
                 {% endfor %}
                 <tr class="table-dark">
                     <td><b>Total</b></td>
-                    <td colspan="4"></td>
-                    <td colspan="num"><b>$ {{ carrito.obtener_precio_total }}</b></td>
+                    <td colspan="3"></td>
+                    <td colspan="num"><b>${{ carrito.obtener_precio_total }}</b></td>
                 </tr>
                 </tbody>
             </table>

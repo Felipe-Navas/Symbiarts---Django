@@ -15,8 +15,17 @@
             <li class="list-group-item lista_compras rounded">
                 <div class="row">
                     <div class="col-2">
-                        <!-- Hacer un previsualizador de archivos o galeria -->
-                        <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="Smiley face" height="150" width="150">
+                    {% with detalle_venta_obra_first=compra.detalle_venta_obra.first %}
+                        {% with obra=detalle_venta_obra_first.obra  %}
+                            {% with archivo_obra=obra.archivos.first %}
+                                {% if archivo_obra.archivo.url %}
+                                    <img src="{{ archivo_obra.archivo.url }}" class="img-fluid" alt="{{ obra.nombre }}">
+                                {% else %}
+                                    <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}">
+                                {% endif %}
+                            {% endwith %}
+                        {% endwith %}
+                    {% endwith %}
                     </div>
                     <div class="col-8">
                         <h4>Compraste {{ compra.fecha|naturaltime }} <small class="text-muted">({{compra.fecha}})</small></h4>
@@ -28,9 +37,9 @@
                                     <h5>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</h5>
                                 {% endif %}
                                 {% if detalle.cantidad_obra == 1 %}
-                                    <p>Total: $ {{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
+                                    <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
                                 {% else %}
-                                    <p>Total: $ {{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
+                                    <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
                                 {% endif %}
                             {% endwith %}
                         {% endfor %}

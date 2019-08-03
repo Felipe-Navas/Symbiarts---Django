@@ -1,5 +1,5 @@
 {% extends 'symbiarts_app/base.html' %}
-
+{% load static %}
 {% block title %}Tienda Symbiarts{% endblock %}
 
 {% block navbar %}
@@ -18,7 +18,13 @@
                 <div class="card lista_obras">
                     <div class="card-body">
                         <h5 class="card-title"><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></h5>
-                        <!-- Hacer un previsualizador de archivos o galeria -->
+                        {% with archivo_obra=obra.archivos.first %}
+                            {% if archivo_obra.archivo.url %}
+                                <img src="{{ archivo_obra.archivo.url }}" class="img-fluid" alt="{{ obra.nombre }}">
+                            {% else %}
+                                <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}">
+                            {% endif %}
+                        {% endwith %}
                         <a href="{{ obra.archivos.archivo.url }}">{{ obra.archivos.archivo.name }}</a>
                         <p class="card-text">Categoria: {{ obra.categoria }}</p>
                         <p class="card-text">{{ obra.descripcion|linebreaksbr }}</p>
@@ -32,7 +38,7 @@
                             <p class="card-text">Dimensiones: {{ obra.dimensiones }}</p>
                         {% endif %}
                         {% if obra.precio %}
-                            <p class="card-text">Precio: {{ obra.precio }}</p>
+                            <p class="card-text">Precio: ${{ obra.precio }}</p>
                         {% endif %}
                         {% if obra.tipo %}
                             <p class="card-text">Tipo: {{ obra.tipo }}</p>
