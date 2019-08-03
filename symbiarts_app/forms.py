@@ -38,7 +38,3 @@ class FormComentario(forms.ModelForm):
 
 class FormBuscar(forms.Form):
     cadena = forms.CharField(max_length=50)
-
-
-class FormComoPagarObra(forms.Form):
-    metodoPago = forms.CharField(widget=forms.HiddenInput, required=False)

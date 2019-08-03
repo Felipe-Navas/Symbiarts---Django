@@ -15,9 +15,6 @@
                 <h3>Detalle del envío</h3>
                 <li class="list-group-item">Envío acordar con el vendedor</li>
 
-                <h3>Detalle del pago</h3>
-                <li class="list-group-item">{{ metodo_pago_elegido }}</li>
-
                 <h3>Datos de facturación</h3>
                 <li class="list-group-item">{{ user.username }}</li>
 
@@ -38,9 +35,14 @@
                 <p>Precio: ${{ obra.precio }}</p>
                 <p>Total: ${{ precio_total}}</p>
 
-                <form action="{% url 'symbiarts_app:grabar_compra' obra.id %}" method="post">
+                <form action="{% url 'symbiarts_app:grabar_compra' obra.id %}" method="POST">
                     {% csrf_token %}
-                    <button class="btn btn-success">Confirmar Compra</button>
+                    <script
+                        src="https://www.mercadopago.com.ar/integrations/v1/web-payment-checkout.js"
+                        data-access-token= "TEST-4348411220192626-072815-6867d52846082350201f93117c3f91d1-455977962"
+                        data-preference-id="{{ preference.id }}"
+                        data-button-label="Confirmar compra">
+                    </script>
                 </form>
             </div>
         </div>
