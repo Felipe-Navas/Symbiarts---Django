@@ -18,6 +18,9 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from cuentas import views as cuentas_views
 from django.conf.urls import url
+from . import settings
+from django.contrib.staticfiles.urls import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 
 urlpatterns = [
@@ -60,3 +63,6 @@ urlpatterns = [
             template_name='password_change_done.html'),
         name='password_change_done'),
 ]
+
+urlpatterns += staticfiles_urlpatterns()
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -20,7 +20,13 @@
                 {% for item in carrito %}
                     {% with obra=item.obra  %}
                         <li class="list-group-item">
-                            <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="..." height="70" width="70">
+                            {% with archivo_obra=obra.archivos.first %}
+                                {% if archivo_obra.archivo.url %}
+                                    <img src="{{ archivo_obra.archivo.url }}" class="img-fluid" alt="{{ obra.nombre }}" style="height: 90px; width: auto">
+                                {% else %}
+                                    <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}" style="height: 90px; width: auto">
+                                {% endif %}
+                            {% endwith %}
                             {{ obra.nombre }}
                             ({{ item.cantidad }})
                             Precio: ${{ item.precio }}
