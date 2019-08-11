@@ -92,11 +92,10 @@ def nueva_obra(request):
 def editar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
     if request.user != obra.usuario:
-        mensaje = ("Estimado/a, {}, no puede editar esta obra porque le "
-                   "pertenece a otro usuario.").format(request.user.username)
+        mensaje = ("no puede editar esta obra porque le pertenece a otro "
+                   "usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
 #    obra_archivo = ObraArchivo.objects.filter(obra__pk=pk)
     if request.method == "POST":
         form = FormObra(request.POST, instance=obra)
@@ -129,32 +128,41 @@ def editar_obra(request, pk):
 def pausar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
     if request.user == obra.usuario:
-        obra.pausada = True
-        obra.fecha_pausada = timezone.now()
-        obra.save()
+        if obra.tipo == 'AW':
+            mensaje = ("no puede pausar esta obra porque es de tipo ArtWork.")
+            return render(request, 'symbiarts_app/error_generico.html', {
+                'mensaje': mensaje})
+        if not obra.pausada:
+            obra.pausada = True
+            obra.fecha_pausada = timezone.now()
+            obra.save()
         return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
     else:
-        mensaje = ("Estimado/a, {}, no puede pausar esta obra porque le "
-                   "pertenece a otro usuario.").format(request.user.username)
+        mensaje = ("no puede pausar esta obra porque le pertenece a otro "
+                   "usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
 
 
 @login_required
 def reactivar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
     if request.user == obra.usuario:
-        obra.pausada = False
-        obra.fecha_pausada = None
-        obra.save()
+        if obra.tipo == 'AW':
+            mensaje = ("no puede reactivar esta obra porque es de tipo "
+                       "ArtWork.")
+            return render(request, 'symbiarts_app/error_generico.html', {
+                'mensaje': mensaje})
+        if obra.pausada:
+            obra.pausada = False
+            obra.fecha_pausada = None
+            obra.save()
         return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
     else:
-        mensaje = ("Estimado/a, {}, no puede reactivar esta obra porque le "
-                   "pertenece a otro usuario.").format(request.user.username)
+        mensaje = ("no puede reactivar esta obra porque le pertenece a otro "
+                   "usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
 
 
 @login_required
@@ -176,12 +184,10 @@ def nuevo_comentario(request, pk):
 def eliminar_comentario(request, pk):
     comentario = get_object_or_404(Comentario, pk=pk)
     if request.user != comentario.usuario:
-        mensaje = ("Estimado/a, {}, no puede eliminar este comentario porque "
-                   " le pertenece a otro usuario.").format(
-                   request.user.username)
+        mensaje = ("no puede eliminar este comentario porque le pertenece a "
+                   "otro usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
     comentario.delete()
     return redirect('symbiarts_app:detalle_obra',
                     pk=comentario.obra.pk)
@@ -227,11 +233,21 @@ def buscar_obras(request):
 def orquestar_compra_carrito(request, obra_id):
     obra = get_object_or_404(Obra, pk=obra_id)
     if request.user == obra.usuario:
-        mensaje = ("Estimado/a, {}, no puede comprar esta obra porque le "
-                   "pertenece a usted mismo!.").format(request.user.username)
+        mensaje = ("no puede comprar esta obra porque le pertenece a usted "
+                   "mismo!.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
+
+    if obra.tipo == 'AW':
+        mensaje = ("no puede comprar esta obra porque es de tipo ArtWork.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
+    if obra.pausada:
+        mensaje = ("no puede comprar esta obra porque esta pausada.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
     formCarrito = FormAgregarObraCarrito(request.POST,
                                          stock=obra.obtener_stock())
     if formCarrito.is_valid():
@@ -320,31 +336,39 @@ def crear_preference_api_mercadopago(request, obra):
 def grabar_compra(request, obra_id):
     obra = get_object_or_404(Obra, id=obra_id)
     if request.user == obra.usuario:
-        mensaje = ("Estimado/a, {}, no puede comprar esta obra porque le "
-                   "pertenece a usted mismo!.").format(request.user.username)
+        mensaje = ("no puede comprar esta obra porque le pertenece a usted "
+                   "mismo!.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
+
+    if obra.tipo == 'AW':
+        mensaje = ("no puede comprar esta obra porque es de tipo ArtWork.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
+    if obra.pausada:
+        mensaje = ("no puede comprar esta obra porque esta pausada.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
     cantidad_obras = request.session['cantidad_obras']
     email_customer = "test_user_85852805@testuser.com"
     payer_id = buscar_id_customer_api_mercadopago(request, email_customer)
     if payer_id is None:
-        mensaje = ("Estimado/a, {}, no pudimos encontrar su numero de cliente"
-                   " en mercadopago, por favor intente nuevamente."
-                   ).format(request.user.username)
+        mensaje = ("no pudimos encontrar su numero de cliente en mercadopago,"
+                   " por favor intente nuevamente.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
+
     print(payer_id)
     external_reference = request.session['external_reference']
     id_pago = buscar_pago_api_mercadopago(request, external_reference, payer_id)
     if id_pago is None:
-        mensaje = ("Estimado/a, {}, no pudimos encontrar el pago realizado"
-                   " en mercadopago, por favor intente nuevamente."
-                   ).format(request.user.username)
+        mensaje = ("no pudimos encontrar el pago realizado en mercadopago, "
+                   "por favor intente nuevamente.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
+
     print("payer_id" + id_pago)
     """
     venta_obra = VentaObra.objects.create(
@@ -425,12 +449,36 @@ def comprar_carrito(request):
 def grabar_compra_carrito(request):
     carrito = request.session.get(settings.CARRITO_SESSION_ID)
 
+    obra_ids = carrito.keys()
+    obras = Obra.objects.filter(id__in=obra_ids)
+
+    # Controlo que todas las obras del carrito se puedan comprar
+    for obra in obras:
+        # Controlo que sean de otro usuario
+        if request.user == obra.usuario:
+            mensaje = ("una de las obras del carrito, no se puede comprar "
+                       "porque le pertenece a usted mismo!.")
+            return render(request, 'symbiarts_app/error_generico.html', {
+                'mensaje': mensaje})
+
+        # Controlo que sean ArtSale
+        if obra.tipo == 'AW':
+            mensaje = ("una de las obras del carrito, no se puede comprar "
+                       "porque es de tipo ArtWork.")
+            return render(request, 'symbiarts_app/error_generico.html', {
+                'mensaje': mensaje})
+
+        # Controlo que no esten pausadas
+        if obra.pausada:
+            mensaje = ("una de las obras del carrito, no se puede comprar "
+                       "porque esta pausada.")
+            return render(request, 'symbiarts_app/error_generico.html', {
+                'mensaje': mensaje})
+
     venta_obra = VentaObra.objects.create(
         cliente=request.user,
         metodo_pago='Mercadopago')
 
-    obra_ids = carrito.keys()
-    obras = Obra.objects.filter(id__in=obra_ids)
     for obra in obras:
         cantidad_obras = carrito[str(obra.id)]['cantidad']
         DetalleVentaObra.objects.create(
@@ -475,11 +523,10 @@ def detalle_compra(request, compra_id):
             'compra': compra,
             'formBuscar': formBuscar})
     else:
-        mensaje = ("Estimado/a, {}, no puede visualizar esta compra, porque le"
-                   " pertenece a otro usuario.").format(request.user.username)
+        mensaje = ("no puede visualizar esta compra, porque le pertenece a "
+                   "otro usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
 
 
 @login_required
@@ -524,8 +571,7 @@ def detalle_venta(request, venta_id):
             'cantidad_obras_vendedor': cantidad_obras_vendedor,
             'precio_total_vendedor': precio_total_vendedor})
     else:
-        mensaje = ("Estimado/a, {}, no puede visualizar esta venta, porque le"
-                   " pertenece a otro usuario.").format(request.user.username)
+        mensaje = ("no puede visualizar esta venta, porque le pertenece a "
+                   "otro usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})

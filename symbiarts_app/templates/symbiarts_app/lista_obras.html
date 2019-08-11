@@ -41,7 +41,7 @@
                             <p class="card-text">Precio: ${{ obra.precio }}</p>
                         {% endif %}
                         {% if obra.tipo %}
-                            <p class="card-text">Tipo: {{ obra.tipo }}</p>
+                            <p class="card-text">Tipo: {{ obra.get_tipo_display }}</p>
                         {% endif %}
                     </div>
                     <div class="card-footer text-muted">
