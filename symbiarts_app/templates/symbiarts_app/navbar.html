@@ -1,7 +1,7 @@
 {% load bootstrap4 %}
 
 <nav class="navbar navbar-expand-sm fixed-top navbar-dark bg-dark">
-    <a class="navbar-brand" href="/">Tienda Symbiarts</a>
+    <a class="navbar-brand" href="/">Symbiarts</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -43,6 +43,7 @@
                         <a class="dropdown-item" href="{% url 'my_account' %}">Mi cuenta</a>
                         <a class="dropdown-item" href="{% url 'symbiarts_app:nueva_obra' %}">Nueva Obra</a>
                         <a class="dropdown-item" href="{% url 'symbiarts_app:lista_compras' %}">Compras</a>
+                        <a class="dropdown-item" href="{% url 'symbiarts_app:lista_ventas' %}">Ventas</a>
                         <a class="dropdown-item" href="#">Mis Obras</a>
                         {% if user.is_staff %}
                             <a class="dropdown-item" href="{% url 'admin:index' %}">Seccion Admin</a>

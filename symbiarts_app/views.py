@@ -246,7 +246,8 @@ def orquestar_compra_carrito(request, obra_id):
                 'obra': obra,
                 'cantidad_obras': cantidad_obras,
                 'precio_total': precio_total,
-                'preference': preference})
+                'preference': preference,
+                'public_key': settings.MP_PUBLIC_KEY})
         elif accion == 'agregar_al_carrito':
             carrito = Carrito(request)
             act_cantidad = formCarrito.cleaned_data.get('actualizar_cantidad')
@@ -279,25 +280,26 @@ def crear_preference_api_mercadopago(request, obra):
                 "unit_price": 1
             }
         ],
-        "payer": {
-            "name": "Nombre Test",
-            "surname": "Apellido",
-            "email": "test_user_60385607@testuser.com",
-            "identification": {
-                "type": "DNI",
-                "number": "12345678"
-                }
-            },
-        "external_reference": external_reference,
-        "collector_id": 455977962,
         "back_urls": {
             "success": "http://localhost:8000",
             "failure": "http://localhost:8000/fallo",
             "pending": "http://localhost:8000/pending"
             },
         "auto_return": "approved",
+        "external_reference": external_reference,
         "binary_mode": True,
     }
+    """
+        "payer": {
+            "name": "Nombre Test",
+            "surname": "Apellido",
+            "email": "test_user_85852805@testuser.com",
+            "identification": {
+                "type": "DNI",
+                "number": "12345678"
+                }
+            },
+    """
     """ Agregar fecha de expiracion a la preference
         utc_offset_sec = time.altzone if time.localtime().tm_isdst else time.timezone
         utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
@@ -324,7 +326,7 @@ def grabar_compra(request, obra_id):
             'mensaje': mensaje
             })
     cantidad_obras = request.session['cantidad_obras']
-    email_customer = "test_user_60385607@testuser.com"
+    email_customer = "test_user_85852805@testuser.com"
     payer_id = buscar_id_customer_api_mercadopago(request, email_customer)
     if payer_id is None:
         mensaje = ("Estimado/a, {}, no pudimos encontrar su numero de cliente"
@@ -343,11 +345,11 @@ def grabar_compra(request, obra_id):
         return render(request, 'symbiarts_app/error_generico.html', {
             'mensaje': mensaje
             })
-    print(id_pago)
+    print("payer_id" + id_pago)
     """
     venta_obra = VentaObra.objects.create(
         cliente=request.user,
-        metodo_pago='metodo_pago')
+        metodo_pago='Mercadopago')
 
     DetalleVentaObra.objects.create(
         venta_obra=venta_obra,
@@ -366,6 +368,8 @@ def grabar_compra(request, obra_id):
 def buscar_id_customer_api_mercadopago(request, email_customer):
     mp = mercadopago.MP(settings.MP_ACCESS_TOKEN)
     customer = mp.get("/v1/customers/search", {"email": email_customer})
+    print("Customer:")
+    print(customer)
     if customer["response"]["results"]:
         id_customer = customer["response"]["results"][0]["id"]
     else:
@@ -390,6 +394,7 @@ def buscar_pago_api_mercadopago(request, external_reference, payer_id):
     searchResult = mp.get("/v1/payments/search", payment_data)
     if searchResult["response"]["results"]:
         ultimoElemento = searchResult["response"]["results"].pop()
+        print("Ultimo elemento:")
         print(ultimoElemento)
         id_pago = ultimoElemento["id"]
     else:
@@ -422,7 +427,7 @@ def grabar_compra_carrito(request):
 
     venta_obra = VentaObra.objects.create(
         cliente=request.user,
-        metodo_pago='metodo_pago')
+        metodo_pago='Mercadopago')
 
     obra_ids = carrito.keys()
     obras = Obra.objects.filter(id__in=obra_ids)
@@ -471,6 +476,55 @@ def detalle_compra(request, compra_id):
             'formBuscar': formBuscar})
     else:
         mensaje = ("Estimado/a, {}, no puede visualizar esta compra, porque le"
+                   " pertenece a otro usuario.").format(request.user.username)
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje
+            })
+
+
+@login_required
+def lista_ventas(request):
+    queryset = VentaObra.objects.filter(
+        detalle_venta_obra__obra__usuario=request.user).order_by(
+        '-fecha').distinct()
+    page = request.GET.get('page')
+    paginator = Paginator(queryset, 5)
+    try:
+        ventas = paginator.page(page)
+    except PageNotAnInteger:
+        # Volver a la primera página
+        ventas = paginator.page(1)
+    except EmptyPage:
+        # Voy a la ultima página si llega una inexistente
+        ventas = paginator.page(paginator.num_pages)
+    formBuscar = FormBuscar()
+    return render(request, 'symbiarts_app/lista_ventas.html', {
+        'ventas': ventas,
+        'formBuscar': formBuscar})
+
+
+@login_required
+def detalle_venta(request, venta_id):
+    queryset = VentaObra.objects.filter(
+        detalle_venta_obra__obra__usuario=request.user, id=venta_id).distinct()
+    venta = get_object_or_404(VentaObra, id=venta_id)
+    if queryset:
+        formBuscar = FormBuscar()
+        cantidad_obras_vendedor = 0
+        precio_total_vendedor = 0
+        for detalle in venta.detalle_venta_obra.values():
+            obra = get_object_or_404(Obra, pk=detalle['obra_id'])
+            if obra.usuario == request.user:
+                cantidad_obras_vendedor += detalle['cantidad_obra']
+                precio_total_vendedor += Decimal(detalle['precio_obra'] *
+                                                 detalle['cantidad_obra'])
+        return render(request, 'symbiarts_app/detalle_venta.html', {
+            'venta': venta,
+            'formBuscar': formBuscar,
+            'cantidad_obras_vendedor': cantidad_obras_vendedor,
+            'precio_total_vendedor': precio_total_vendedor})
+    else:
+        mensaje = ("Estimado/a, {}, no puede visualizar esta venta, porque le"
                    " pertenece a otro usuario.").format(request.user.username)
         return render(request, 'symbiarts_app/error_generico.html', {
             'mensaje': mensaje

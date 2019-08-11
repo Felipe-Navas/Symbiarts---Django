@@ -26,6 +26,9 @@ urlpatterns = [
     path('compras/', views.lista_compras, name='lista_compras'),
     path('compra/<int:compra_id>/', views.detalle_compra,
          name='detalle_compra'),
+    path('ventas/', views.lista_ventas, name='lista_ventas'),
+    path('venta/<int:venta_id>/', views.detalle_venta,
+         name='detalle_venta'),
     path('comentario/<int:pk>/eliminar/', views.eliminar_comentario,
          name='eliminar_comentario')
 ]

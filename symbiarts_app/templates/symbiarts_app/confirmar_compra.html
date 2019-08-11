@@ -39,7 +39,7 @@
                     {% csrf_token %}
                     <script
                         src="https://www.mercadopago.com.ar/integrations/v1/web-payment-checkout.js"
-                        data-access-token= "TEST-4348411220192626-072815-6867d52846082350201f93117c3f91d1-455977962"
+                        data-public-key= "{{ public_key }}"
                         data-preference-id="{{ preference.id }}"
                         data-button-label="Confirmar compra">
                     </script>

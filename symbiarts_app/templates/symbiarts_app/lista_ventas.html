@@ -1,0 +1,85 @@
+{% extends 'symbiarts_app/base.html' %}
+{% load static %}
+{% block title %}Tienda Symbiarts - Ventas{% endblock %}
+
+{% block navbar %}
+    {% include 'symbiarts_app/navbar.html' %}
+{% endblock %}
+
+{% load humanize %}
+
+{% block content %}
+    <ul class="list-group mt-3">
+        <h2>Ventas</h2>
+        {% for venta in ventas %}
+            <li class="list-group-item lista_compras rounded">
+                <div class="row">
+                    <div class="col">
+                        <h4>Vendiste {{ venta.fecha|naturaltime }}
+                            <span>
+                                <a href="{% url 'symbiarts_app:detalle_venta' venta_id=venta.id %}" class="btn btn-primary float-right">Detalle</a>
+                            </span>
+                        </h4>
+                    </div>
+                </div>
+                <div class="row p-3">
+                    <div class="col-2">
+                        {% for detalle_venta_obra_img in venta.detalle_venta_obra.all %}
+                            {% with obra=detalle_venta_obra_img.obra %}
+                                {% if forloop.first %} <!-- obra.usuario == user -->
+                                    {% with archivo_obra=obra.archivos.first %}
+                                        {% if archivo_obra.archivo.url %}
+                                            <img src="{{ archivo_obra.archivo.url }}" class="img-fluid" alt="{{ obra.nombre }}">
+                                        {% else %}
+                                            <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}">
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+                            {% endwith %}
+                        {% endfor %}
+                    </div>
+                    <div class="col">
+                        {% for detalle in venta.detalle_venta_obra.all %}
+                            {% with obra=detalle.obra %}
+                                {% if obra.usuario == user %}
+                                    <div class="row">
+                                        <div class="col">
+                                            {% if obra.pk > 0 %}
+                                                <p class="mb-0"><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></p>
+                                            {% else %}
+                                                <p>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</p>
+                                            {% endif %}
+                                            {% if detalle.cantidad_obra == 1 %}
+                                                <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
+                                            {% else %}
+                                                <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endwith %}
+                        {% endfor %}
+                    </div>
+                    <div class="col">
+                        <div class="row">
+                            <i class="fas fa-user-circle fa-3x"></i>
+                            <div class="col pl-2">
+                                <p class="font-weight-bold mb-0">Comprador</p>
+                                <p>{{ venta.cliente }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        {% empty %}
+            <div class="jumbotron text-xs-center">
+                <h2 class="display-4">Aun no has realizado ninguna venta.</h2>
+                <a class="btn btn-primary" href="{% url 'symbiarts_app:lista_obras' %}" role="button">Volver a la tienda</a>
+                <a class="btn btn-success" href="{% url 'symbiarts_app:nueva_obra' %}" role="button">Vendé tu primer obra</a>
+            </div>
+        {% endfor %}
+    </ul>
+
+    {% include 'symbiarts_app/paginator.html' with paginator=ventas %}
+
+{% endblock %}
