@@ -20,11 +20,6 @@
         {% endif %}
         <div class="row p-3">
             <div class="col-8">
-                {% if user.username == "algo" %}
-                    {% for archivo_obra in archivos_obra %}
-                        <p><a href="{{ archivo_obra.archivo.url }}">{{ archivo_obra.archivo.name }}</a></p>
-                    {% endfor %}
-                {% endif %}
                 <div id="myCarousel" class="carousel">
                     <!-- main slider carousel items -->
                     <div class="carousel-inner">
@@ -68,21 +63,27 @@
                 <h1>{{ obra.nombre }}</h1>
                 {% if obra.fecha_publicacion %}
                     <div class="mt-2">
-                        <p class="text-muted">En venta desde el {{ obra.fecha_publicacion }}</p>
+                        {% if obra.tipo == 'AS' %}
+                            <p class="text-muted">En venta desde el {{ obra.fecha_publicacion }}</p>
+                        {% else %}
+                            <p class="text-muted">Publicada el {{ obra.fecha_publicacion }}</p>
+                        {% endif %}
                     </div>
                 {% endif %}
-                {% if obra.precio %}
+                {% if obra.precio and obra.tipo == 'AS' %}
                     <p class="display-4">${{ obra.precio }}</p>
                 {% endif %}
                 {% if obra.usuario == user %}
                     <a class="btn btn-outline-secondary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}">Editar</a>
-                    {% if obra.pausada == True %}
-                        <a class="btn btn-outline-success" href="{% url 'symbiarts_app:reactivar_obra' pk=obra.pk %}">Reactivar</a>
-                    {% else %}
-                        <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:pausar_obra' pk=obra.pk %}">Pausar</a>
+                    {% if obra.tipo == 'AS' %}
+                        {% if obra.pausada == True %}
+                            <a class="btn btn-outline-success" href="{% url 'symbiarts_app:activar_obra' pk=obra.pk %}">Activar</a>
+                        {% else %}
+                            <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:pausar_obra' pk=obra.pk %}">Pausar</a>
+                        {% endif %}
                     {% endif %}
                 {% endif %}
-                {% if obra.pausada == False and obra.usuario != user %}
+                {% if obra.pausada == False and obra.usuario != user and obra.tipo == 'AS' %}
                     <form class="form-inline" action="{% url 'symbiarts_app:orquestar_compra_carrito' obra.id %}" method="post">
                         {% csrf_token %}
                         {% bootstrap_messages %}
@@ -108,7 +109,7 @@
                 <p>Dimensiones: {{ obra.dimensiones }}</p>
             {% endif %}
             {% if obra.tipo %}
-                <p>Tipo: {{ obra.tipo }}</p>
+                <p>Tipo: {{ obra.get_tipo_display }}</p>
             {% endif %}
         </div>
     </div>
@@ -138,7 +139,7 @@
             </div>
         </div>
     {% empty %}
-        <p>Aun no hay comentarios <i class="far fa-sad-tear"></i></p>
+        <p>Aún no hay comentarios <i class="far fa-sad-tear"></i></p>
     {% endfor %}
 
     {% include 'symbiarts_app/paginator.html' with paginator=comentarios %}

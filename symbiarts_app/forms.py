@@ -16,6 +16,20 @@ class FormObra(forms.ModelForm):
             'precio',
             'tipo',)
 
+    def clean(self):
+        cleaned_data = super().clean()
+        tipo = cleaned_data.get("tipo")
+        precio = cleaned_data.get("precio")
+        stock = cleaned_data.get("stock")
+
+        if tipo == 'AS':
+            if not precio or precio <= 0:
+                self.add_error("precio",
+                               "Ingresar correctamente el precio de la obra!")
+            if stock <= 0:
+                self.add_error("stock",
+                               "Ingresar correctamente el stock de la obra!")
+
 
 class FormObraArchivos(forms.ModelForm):
     class Meta:
@@ -38,7 +52,3 @@ class FormComentario(forms.ModelForm):
 
 class FormBuscar(forms.Form):
     cadena = forms.CharField(max_length=50)
-
-
-class FormComoPagarObra(forms.Form):
-    metodoPago = forms.CharField(widget=forms.HiddenInput, required=False)

@@ -1,16 +1,20 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import (Obra, ObraArchivo, Comentario, MetodoPago, VentaObra,
+from .models import (Obra, ObraArchivo, Comentario, VentaObra,
                      DetalleVentaObra)
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from .forms import (FormObra, FormObraArchivos, FormComentario, FormBuscar,
-                    FormComoPagarObra)
+from .forms import (FormObra, FormObraArchivos, FormComentario, FormBuscar)
 from carrito.forms import FormAgregarObraCarrito
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from carrito.carrito import Carrito
 from django.conf import settings
+import mercadopago
+import json
+from decimal import Decimal
+import datetime
+import time
 
 
 def lista_obras(request):
@@ -88,11 +92,10 @@ def nueva_obra(request):
 def editar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
     if request.user != obra.usuario:
-        mensaje = ("Estimado/a, {}, no puede editar esta obra porque le "
-                   "pertenece a otro usuario.").format(request.user.username)
+        mensaje = ("no puede editar esta obra porque le pertenece a otro "
+                   "usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
 #    obra_archivo = ObraArchivo.objects.filter(obra__pk=pk)
     if request.method == "POST":
         form = FormObra(request.POST, instance=obra)
@@ -125,32 +128,40 @@ def editar_obra(request, pk):
 def pausar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
     if request.user == obra.usuario:
-        obra.pausada = True
-        obra.fecha_pausada = timezone.now()
-        obra.save()
+        if obra.tipo == 'AW':
+            mensaje = ("no puede pausar esta obra porque es de tipo ArtWork.")
+            return render(request, 'symbiarts_app/error_generico.html', {
+                'mensaje': mensaje})
+        if not obra.pausada:
+            obra.pausada = True
+            obra.fecha_pausada = timezone.now()
+            obra.save()
         return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
     else:
-        mensaje = ("Estimado/a, {}, no puede pausar esta obra porque le "
-                   "pertenece a otro usuario.").format(request.user.username)
+        mensaje = ("no puede pausar esta obra porque le pertenece a otro "
+                   "usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
 
 
 @login_required
-def reactivar_obra(request, pk):
+def activar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
     if request.user == obra.usuario:
-        obra.pausada = False
-        obra.fecha_pausada = None
-        obra.save()
+        if obra.tipo == 'AW':
+            mensaje = ("no puede activar esta obra porque es de tipo ArtWork.")
+            return render(request, 'symbiarts_app/error_generico.html', {
+                'mensaje': mensaje})
+        if obra.pausada:
+            obra.pausada = False
+            obra.fecha_pausada = None
+            obra.save()
         return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
     else:
-        mensaje = ("Estimado/a, {}, no puede reactivar esta obra porque le "
-                   "pertenece a otro usuario.").format(request.user.username)
+        mensaje = ("no puede activar esta obra porque le pertenece a otro "
+                   "usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
 
 
 @login_required
@@ -172,12 +183,10 @@ def nuevo_comentario(request, pk):
 def eliminar_comentario(request, pk):
     comentario = get_object_or_404(Comentario, pk=pk)
     if request.user != comentario.usuario:
-        mensaje = ("Estimado/a, {}, no puede eliminar este comentario porque "
-                   " le pertenece a otro usuario.").format(
-                   request.user.username)
+        mensaje = ("no puede eliminar este comentario porque le pertenece a "
+                   "otro usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
     comentario.delete()
     return redirect('symbiarts_app:detalle_obra',
                     pk=comentario.obra.pk)
@@ -223,27 +232,37 @@ def buscar_obras(request):
 def orquestar_compra_carrito(request, obra_id):
     obra = get_object_or_404(Obra, pk=obra_id)
     if request.user == obra.usuario:
-        mensaje = ("Estimado/a, {}, no puede comprar esta obra porque le "
-                   "pertenece a usted mismo!.").format(request.user.username)
+        mensaje = ("no puede comprar esta obra porque le pertenece a usted "
+                   "mismo!.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
+
+    if obra.tipo == 'AW':
+        mensaje = ("no puede comprar esta obra porque es de tipo ArtWork.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
+    if obra.pausada:
+        mensaje = ("no puede comprar esta obra porque esta pausada.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
     formCarrito = FormAgregarObraCarrito(request.POST,
                                          stock=obra.obtener_stock())
     if formCarrito.is_valid():
         cantidad_obras = formCarrito.cleaned_data.get("cantidad")
-        metodos_pago = MetodoPago.objects.order_by('nombre')
         accion = formCarrito.cleaned_data.get("accion")
         if accion == 'comprar':
             request.session['cantidad_obras'] = cantidad_obras
-            formComoPagarObra = FormComoPagarObra()
             precio_total = cantidad_obras * obra.precio
-            return render(request, 'symbiarts_app/como_pagar_obra.html', {
+            preference = crear_preference_api_mercadopago_obra(
+                request, obra=obra)
+            return render(request, 'symbiarts_app/confirmar_compra.html', {
                 'obra': obra,
-                'metodos_pago': metodos_pago,
                 'cantidad_obras': cantidad_obras,
                 'precio_total': precio_total,
-                'formComoPagarObra': formComoPagarObra})
+                'preference': preference,
+                'public_key': settings.MP_PUBLIC_KEY})
         elif accion == 'agregar_al_carrito':
             carrito = Carrito(request)
             act_cantidad = formCarrito.cleaned_data.get('actualizar_cantidad')
@@ -255,43 +274,85 @@ def orquestar_compra_carrito(request, obra_id):
             return redirect('carrito:detalle_carrito')
 
 
-@require_POST
-def confirmar_compra(request, obra_id):
-    obra = get_object_or_404(Obra, id=obra_id)
-    if request.user == obra.usuario:
-        mensaje = ("Estimado/a, {}, no puede comprar esta obra porque le "
-                   "pertenece a usted mismo!.").format(request.user.username)
-        return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
-    formComoPagarObra = FormComoPagarObra(request.POST)
-    if formComoPagarObra.is_valid():
-        metodo_pago_elegido = formComoPagarObra.cleaned_data.get('metodoPago')
-        request.session['metodo_pago_elegido'] = metodo_pago_elegido
-        cantidad_obras = request.session['cantidad_obras']
-        precio_total = cantidad_obras * obra.precio
-        return render(request, 'symbiarts_app/confirmar_compra.html', {
-            'obra': obra,
-            'cantidad_obras': cantidad_obras,
-            'precio_total': precio_total,
-            'metodo_pago_elegido': metodo_pago_elegido})
+@login_required
+def crear_preference_api_mercadopago_obra(request, obra):
+    mp = mercadopago.MP(settings.MP_ACCESS_TOKEN)
+    id_obra = str(obra.id)
+    nombre_obra = obra.nombre
+    descripcion = obra.descripcion
+    archivo_obra = obra.archivos.first()
+    url_archivo = settings.URL_SYMBIARTS + archivo_obra.archivo.url
+    cantidad = request.session['cantidad_obras']
+    external_reference = str(obra.id)
+    precio_unitario = float(obra.precio)
+    preference = {
+        'items': [
+            {
+                'id': id_obra,
+                'title': nombre_obra,
+                'description': descripcion,
+                'picture_url': url_archivo,
+                'quantity': cantidad,
+                'currency_id': 'ARS',
+                'unit_price': precio_unitario,
+            }
+        ],
+        'back_urls': {
+            'success': 'http://localhost:8000',
+            'failure': 'http://localhost:8000/fallo',
+            'pending': 'http://localhost:8000/pending'
+            },
+        'auto_return': 'approved',
+        'external_reference': external_reference,
+        'binary_mode': True,
+    }
+    """ Agregar fecha de expiracion a la preference
+        utc_offset_sec = time.altzone if time.localtime().tm_isdst else time.timezone
+        utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
+        datetime.datetime.now().replace(tzinfo=datetime.timezone(offset=utc_offset)).isoformat()
+
+        -En el json:
+        "expires": True,
+        "expiration_date_from": "2017-02-01T12:00:00.000-04:00",
+        "expiration_date_to": "2017-02-28T12:00:00.000-04:00"
+    """
+    preferenceResult = mp.create_preference(preference)
+    preference = preferenceResult["response"]
+    return preference
 
 
 @login_required
+@require_POST
 def grabar_compra(request, obra_id):
     obra = get_object_or_404(Obra, id=obra_id)
     if request.user == obra.usuario:
-        mensaje = ("Estimado/a, {}, no puede comprar esta obra porque le "
-                   "pertenece a usted mismo!.").format(request.user.username)
+        mensaje = ("no puede comprar esta obra porque le pertenece a usted "
+                   "mismo!.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
-    metodo_pago_elegido = request.session['metodo_pago_elegido']
+            'mensaje': mensaje})
+
+    if obra.tipo == 'AW':
+        mensaje = ("no puede comprar esta obra porque es de tipo ArtWork.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
+    if obra.pausada:
+        mensaje = ("no puede comprar esta obra porque esta pausada.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
     cantidad_obras = request.session['cantidad_obras']
-    metodo_pago = MetodoPago.objects.filter(nombre=metodo_pago_elegido).first()
+    id_pago = int(request.POST["payment_id"])
+    if id_pago is None:
+        mensaje = ("no pudimos encontrar el pago realizado en mercadopago, "
+                   "por favor intente nuevamente.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
     venta_obra = VentaObra.objects.create(
         cliente=request.user,
-        metodo_pago=metodo_pago)
+        metodo_pago='Mercadopago',
+        id_pago=id_pago)
 
     DetalleVentaObra.objects.create(
         venta_obra=venta_obra,
@@ -317,42 +378,114 @@ def compra_exitosa(request, nro_compra):
 
 def comprar_carrito(request):
     carrito = Carrito(request)
-    precio_total = carrito.obtener_precio_total()
-    cantidad_obras_carrito = carrito.__len__()
-    metodos_pago = MetodoPago.objects.order_by('nombre')
-    formComoPagarObra = FormComoPagarObra()
-    return render(request, 'symbiarts_app/como_pagar_carrito.html', {
-        'metodos_pago': metodos_pago,
-        'cantidad_obras_carrito': cantidad_obras_carrito,
-        'formComoPagarObra': formComoPagarObra,
-        'precio_total': precio_total})
-
-
-@require_POST
-def confirmar_compra_carrito(request):
-    carrito = Carrito(request)
-    formComoPagarObra = FormComoPagarObra(request.POST)
-    if formComoPagarObra.is_valid():
-        metodo_pago_elegido = formComoPagarObra.cleaned_data.get('metodoPago')
-        request.session['metodo_pago_elegido'] = metodo_pago_elegido
-        return render(request, 'symbiarts_app/confirmar_compra_carrito.html', {
-            'carrito': carrito,
-            'metodo_pago_elegido': metodo_pago_elegido,
-            })
+    # precio_total = carrito.obtener_precio_total()
+    # cantidad_obras_carrito = carrito.__len__()
+    preference = crear_preference_api_mercadopago_carrito(request)
+    return render(request, 'symbiarts_app/confirmar_compra_carrito.html', {
+        'carrito': carrito,
+        'preference': preference,
+        'public_key': settings.MP_PUBLIC_KEY})
 
 
 @login_required
-def grabar_compra_carrito(request):
+def crear_preference_api_mercadopago_carrito(request):
     carrito = request.session.get(settings.CARRITO_SESSION_ID)
-    metodo_pago_elegido = request.session['metodo_pago_elegido']
-    metodo_pago = MetodoPago.objects.filter(nombre=metodo_pago_elegido).first()
-
-    venta_obra = VentaObra.objects.create(
-        cliente=request.user,
-        metodo_pago=metodo_pago)
 
     obra_ids = carrito.keys()
     obras = Obra.objects.filter(id__in=obra_ids)
+    items = []
+
+    for obra in obras:
+        id_obra = str(obra.id)
+        nombre_obra = obra.nombre
+        descripcion = obra.descripcion
+        archivo_obra = obra.archivos.first()
+        url_archivo = settings.URL_SYMBIARTS + archivo_obra.archivo.url
+        cantidad_obras = carrito[str(obra.id)]['cantidad']
+        precio_unitario = float(obra.precio)
+        item = {
+            'id': id_obra,
+            'title': nombre_obra,
+            'description': descripcion,
+            'picture_url': url_archivo,
+            'quantity': cantidad_obras,
+            'currency_id': 'ARS',
+            'unit_price': precio_unitario,
+            }
+        items.append(item)
+
+    external_reference = 'symbiarts'
+
+    mp = mercadopago.MP(settings.MP_ACCESS_TOKEN)
+    preference = {
+        'items': items,
+        'back_urls': {
+            'success': 'http://localhost:8000',
+            'failure': 'http://localhost:8000/fallo',
+            'pending': 'http://localhost:8000/pending'
+            },
+        'auto_return': 'approved',
+        'external_reference': external_reference,
+        'binary_mode': True,
+    }
+    """ Agregar fecha de expiracion a la preference
+        utc_offset_sec = time.altzone if time.localtime().tm_isdst else time.timezone
+        utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
+        datetime.datetime.now().replace(tzinfo=datetime.timezone(offset=utc_offset)).isoformat()
+
+        -En el json:
+        "expires": True,
+        "expiration_date_from": "2017-02-01T12:00:00.000-04:00",
+        "expiration_date_to": "2017-02-28T12:00:00.000-04:00"
+    """
+    preferenceResult = mp.create_preference(preference)
+    preference = preferenceResult["response"]
+    return preference
+
+
+@login_required
+@require_POST
+def grabar_compra_carrito(request):
+    carrito = request.session.get(settings.CARRITO_SESSION_ID)
+
+    obra_ids = carrito.keys()
+    obras = Obra.objects.filter(id__in=obra_ids)
+
+    # Controlo que todas las obras del carrito se puedan comprar
+    for obra in obras:
+        # Controlo que sean de otro usuario
+        if request.user == obra.usuario:
+            mensaje = ("una de las obras del carrito, no se puede comprar "
+                       "porque le pertenece a usted mismo!.")
+            return render(request, 'symbiarts_app/error_generico.html', {
+                'mensaje': mensaje})
+
+        # Controlo que sean ArtSale
+        if obra.tipo == 'AW':
+            mensaje = ("una de las obras del carrito, no se puede comprar "
+                       "porque es de tipo ArtWork.")
+            return render(request, 'symbiarts_app/error_generico.html', {
+                'mensaje': mensaje})
+
+        # Controlo que no esten pausadas
+        if obra.pausada:
+            mensaje = ("una de las obras del carrito, no se puede comprar "
+                       "porque esta pausada.")
+            return render(request, 'symbiarts_app/error_generico.html', {
+                'mensaje': mensaje})
+
+    id_pago = int(request.POST["payment_id"])
+    if id_pago is None:
+        mensaje = ("no pudimos encontrar el pago realizado en mercadopago, "
+                   "por favor intente nuevamente.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
+    venta_obra = VentaObra.objects.create(
+        cliente=request.user,
+        metodo_pago='Mercadopago',
+        id_pago=id_pago)
+
     for obra in obras:
         cantidad_obras = carrito[str(obra.id)]['cantidad']
         DetalleVentaObra.objects.create(
@@ -397,8 +530,75 @@ def detalle_compra(request, compra_id):
             'compra': compra,
             'formBuscar': formBuscar})
     else:
-        mensaje = ("Estimado/a, {}, no puede visualizar esta compra, porque le"
-                   " pertenece a otro usuario.").format(request.user.username)
+        mensaje = ("no puede visualizar esta compra, porque le pertenece a "
+                   "otro usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje
-            })
+            'mensaje': mensaje})
+
+
+@login_required
+def lista_ventas(request):
+    queryset = VentaObra.objects.filter(
+        detalle_venta_obra__obra__usuario=request.user).order_by(
+        '-fecha').distinct()
+    page = request.GET.get('page')
+    paginator = Paginator(queryset, 5)
+    try:
+        ventas = paginator.page(page)
+    except PageNotAnInteger:
+        # Volver a la primera página
+        ventas = paginator.page(1)
+    except EmptyPage:
+        # Voy a la ultima página si llega una inexistente
+        ventas = paginator.page(paginator.num_pages)
+    formBuscar = FormBuscar()
+    return render(request, 'symbiarts_app/lista_ventas.html', {
+        'ventas': ventas,
+        'formBuscar': formBuscar})
+
+
+@login_required
+def detalle_venta(request, venta_id):
+    queryset = VentaObra.objects.filter(
+        detalle_venta_obra__obra__usuario=request.user, id=venta_id).distinct()
+    venta = get_object_or_404(VentaObra, id=venta_id)
+    if queryset:
+        formBuscar = FormBuscar()
+        cantidad_obras_vendedor = 0
+        precio_total_vendedor = 0
+        for detalle in venta.detalle_venta_obra.values():
+            obra = get_object_or_404(Obra, pk=detalle['obra_id'])
+            if obra.usuario == request.user:
+                cantidad_obras_vendedor += detalle['cantidad_obra']
+                precio_total_vendedor += Decimal(detalle['precio_obra'] *
+                                                 detalle['cantidad_obra'])
+        return render(request, 'symbiarts_app/detalle_venta.html', {
+            'venta': venta,
+            'formBuscar': formBuscar,
+            'cantidad_obras_vendedor': cantidad_obras_vendedor,
+            'precio_total_vendedor': precio_total_vendedor})
+    else:
+        mensaje = ("no puede visualizar esta venta, porque le pertenece a "
+                   "otro usuario.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
+
+@login_required
+def mis_obras(request):
+    queryset = Obra.objects.filter(
+        usuario=request.user).order_by('fecha_publicacion')
+    page = request.GET.get('page')
+    paginator = Paginator(queryset, 5)
+    try:
+        obras = paginator.page(page)
+    except PageNotAnInteger:
+        # Volver a la primera página
+        obras = paginator.page(1)
+    except EmptyPage:
+        # Voy a la ultima página si llega una inexistente
+        obras = paginator.page(paginator.num_pages)
+    formBuscar = FormBuscar()
+    return render(request, 'symbiarts_app/mis_obras.html', {
+        'obras': obras,
+        'formBuscar': formBuscar})

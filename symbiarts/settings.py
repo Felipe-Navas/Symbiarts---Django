@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'symbiarts_app',
     'cuentas',
     'carrito',
+    'mercadopago',
 ]
 
 MIDDLEWARE = [
@@ -145,3 +146,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 CARRITO_SESSION_ID = 'carrito'
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+
+MP_PUBLIC_KEY = "APP_USR-85212d02-0fc3-40f0-b751-58ba5e77c601"
+MP_ACCESS_TOKEN = "APP_USR-8314636863931012-081221-21f38778ee21fbb5a976f283b4801dc5-458905226"
+MP_CLIENT_ID = 8314636863931012
+MP_CLIENT_SECRET = "IoLK2ToAwY9plsnM9m21MkHRRY0PqnbS"
+
+URL_SYMBIARTS = 'http://localhost:8000'

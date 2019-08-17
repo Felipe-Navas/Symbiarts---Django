@@ -25,7 +25,6 @@
                                 <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}">
                             {% endif %}
                         {% endwith %}
-                        <a href="{{ obra.archivos.archivo.url }}">{{ obra.archivos.archivo.name }}</a>
                         <p class="card-text">Categoria: {{ obra.categoria }}</p>
                         <p class="card-text">{{ obra.descripcion|linebreaksbr }}</p>
                         {% if obra.stock %}
@@ -41,19 +40,19 @@
                             <p class="card-text">Precio: ${{ obra.precio }}</p>
                         {% endif %}
                         {% if obra.tipo %}
-                            <p class="card-text">Tipo: {{ obra.tipo }}</p>
+                            <p class="card-text">Tipo: {{ obra.get_tipo_display }}</p>
                         {% endif %}
-                        <div class="card-footer text-muted">
-                            Publicada el {{ obra.fecha_publicacion }}
-                            <br>
-                            {% if obra.comentarios.count == 0 %}
-                                No tiene comentarios
-                            {% elif obra.comentarios.count == 1 %}
-                                Tiene 1 comentario
-                            {% else %}
-                                Tiene {{ obra.comentarios.count }} comentarios
-                            {% endif %}
-                        </div>
+                    </div>
+                    <div class="card-footer text-muted">
+                        Publicada el {{ obra.fecha_publicacion }}
+                        <br>
+                        {% if obra.comentarios.count == 0 %}
+                            No tiene comentarios
+                        {% elif obra.comentarios.count == 1 %}
+                            Tiene 1 comentario
+                        {% else %}
+                            Tiene {{ obra.comentarios.count }} comentarios
+                        {% endif %}
                     </div>
                 </div>
 

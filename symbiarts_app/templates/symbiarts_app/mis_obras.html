@@ -1,0 +1,82 @@
+{% extends 'symbiarts_app/base.html' %}
+{% load static %}
+{% block title %}Tienda Symbiarts - Mis Obras{% endblock %}
+
+{% block navbar %}
+    {% include 'symbiarts_app/navbar.html' %}
+{% endblock %}
+
+{% load humanize %}
+
+{% block content %}
+
+    <ul class="list-group mt-3">
+        <h3>Mis Obras</h3>
+        {% for obra in obras %}
+            <li class="list-group-item mb-3 rounded">
+                <div class="row">
+                    <div class="col">
+                        <h5>
+                            <a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a>
+                            {% if obra.fecha_publicacion %}
+                                <small class="text-muted">publicada el {{ obra.fecha_publicacion }}</small>
+                            {% endif %}
+                        </h5>
+                    </div>
+                </div>
+                <div class="row p-2">
+                    <div class="col-3">
+                        {% with archivo_obra=obra.archivos.first %}
+                            {% if archivo_obra.archivo.url %}
+                                <img src="{{ archivo_obra.archivo.url }}" class="img-fluid" alt="{{ obra.nombre }}">
+                            {% else %}
+                                <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}">
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="col">
+                        <div class="row">
+                            <div class="col">
+                                <p>Obras vendidas: {{ obra.cantidad_ventas_obra }}</p>
+                                {% if obra.stock %}
+                                    <p>Stock: {{ obra.stock }}</p>
+                                {% endif %}
+                                {% if obra.precio  %}
+                                    <p>Precio: ${{ obra.precio }}</p>
+                                {% endif %}
+                                {% if obra.categoria %}
+                                    <p>Categoria: {{ obra.categoria }}</p>
+                                {% endif %}
+                                {% if obra.tipo %}
+                                    <p>Tipo: {{ obra.get_tipo_display }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col text-right">
+                        <p>
+                            <a class="btn btn-outline-secondary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}">Editar</a>
+                        </p>
+                        {% if obra.tipo == 'AS' %}
+                            <p>
+                                {% if obra.pausada == True %}
+                                    <a class="btn btn-outline-success" href="{% url 'symbiarts_app:activar_obra' pk=obra.pk %}">Activar</a>
+                                {% else %}
+                                    <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:pausar_obra' pk=obra.pk %}">Pausar</a>
+                                {% endif %}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+        {% empty %}
+            <div class="jumbotron text-xs-center">
+                <h2 class="display-4">Aún no has publicado ninguna obra.</h2>
+                <a class="btn btn-primary" href="{% url 'symbiarts_app:nueva_obra' %}" role="button">Publicá tu primer obra</a>
+            </div>
+        {% endfor %}
+    </ul>
+
+    {% include 'symbiarts_app/paginator.html' with paginator=obras %}
+
+{% endblock %}
