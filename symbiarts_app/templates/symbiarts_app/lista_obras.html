@@ -25,7 +25,6 @@
                                 <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}">
                             {% endif %}
                         {% endwith %}
-                        <a href="{{ obra.archivos.archivo.url }}">{{ obra.archivos.archivo.name }}</a>
                         <p class="card-text">Categoria: {{ obra.categoria }}</p>
                         <p class="card-text">{{ obra.descripcion|linebreaksbr }}</p>
                         {% if obra.stock %}

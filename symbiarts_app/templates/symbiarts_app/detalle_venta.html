@@ -52,8 +52,9 @@
                 </div>
                 <div class="card mt-2 p-3">
                     <h4>Detalle de facturacion</h4>
-                    <p>Medio de pago: {{ venta.metodo_pago }}</p>
+                    <p>Medio de pago: <a href="https://www.mercadopago.com.ar/activities" target="_blank">{{ venta.metodo_pago }}</a></p>
                     <p>{{ venta.cliente.username }}</p>
+                    <p>Operación #{{ venta.id_pago}}</p>
                 </div>
 
                 <div class="card mt-2 p-3">

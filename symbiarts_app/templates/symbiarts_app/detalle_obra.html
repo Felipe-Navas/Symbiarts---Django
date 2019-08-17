@@ -77,7 +77,7 @@
                     <a class="btn btn-outline-secondary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}">Editar</a>
                     {% if obra.tipo == 'AS' %}
                         {% if obra.pausada == True %}
-                            <a class="btn btn-outline-success" href="{% url 'symbiarts_app:reactivar_obra' pk=obra.pk %}">Reactivar</a>
+                            <a class="btn btn-outline-success" href="{% url 'symbiarts_app:activar_obra' pk=obra.pk %}">Activar</a>
                         {% else %}
                             <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:pausar_obra' pk=obra.pk %}">Pausar</a>
                         {% endif %}
@@ -139,7 +139,7 @@
             </div>
         </div>
     {% empty %}
-        <p>Aun no hay comentarios <i class="far fa-sad-tear"></i></p>
+        <p>Aún no hay comentarios <i class="far fa-sad-tear"></i></p>
     {% endfor %}
 
     {% include 'symbiarts_app/paginator.html' with paginator=comentarios %}

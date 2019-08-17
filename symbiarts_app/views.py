@@ -145,12 +145,11 @@ def pausar_obra(request, pk):
 
 
 @login_required
-def reactivar_obra(request, pk):
+def activar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
     if request.user == obra.usuario:
         if obra.tipo == 'AW':
-            mensaje = ("no puede reactivar esta obra porque es de tipo "
-                       "ArtWork.")
+            mensaje = ("no puede activar esta obra porque es de tipo ArtWork.")
             return render(request, 'symbiarts_app/error_generico.html', {
                 'mensaje': mensaje})
         if obra.pausada:
@@ -159,7 +158,7 @@ def reactivar_obra(request, pk):
             obra.save()
         return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
     else:
-        mensaje = ("no puede reactivar esta obra porque le pertenece a otro "
+        mensaje = ("no puede activar esta obra porque le pertenece a otro "
                    "usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
             'mensaje': mensaje})
@@ -256,7 +255,7 @@ def orquestar_compra_carrito(request, obra_id):
         if accion == 'comprar':
             request.session['cantidad_obras'] = cantidad_obras
             precio_total = cantidad_obras * obra.precio
-            preference = crear_preference_api_mercadopago(
+            preference = crear_preference_api_mercadopago_obra(
                 request, obra=obra)
             return render(request, 'symbiarts_app/confirmar_compra.html', {
                 'obra': obra,
@@ -276,46 +275,37 @@ def orquestar_compra_carrito(request, obra_id):
 
 
 @login_required
-def crear_preference_api_mercadopago(request, obra):
+def crear_preference_api_mercadopago_obra(request, obra):
     mp = mercadopago.MP(settings.MP_ACCESS_TOKEN)
     id_obra = str(obra.id)
     nombre_obra = obra.nombre
     descripcion = obra.descripcion
+    archivo_obra = obra.archivos.first()
+    url_archivo = settings.URL_SYMBIARTS + archivo_obra.archivo.url
     cantidad = request.session['cantidad_obras']
     external_reference = str(obra.id)
-    request.session['external_reference'] = external_reference
-    precio_unitario = obra.precio
+    precio_unitario = float(obra.precio)
     preference = {
-        "items": [
+        'items': [
             {
-                "id": id_obra,
-                "title": nombre_obra,
-                "description": descripcion,
-                "quantity": cantidad,
-                "currency_id": "ARS",
-                "unit_price": 1
+                'id': id_obra,
+                'title': nombre_obra,
+                'description': descripcion,
+                'picture_url': url_archivo,
+                'quantity': cantidad,
+                'currency_id': 'ARS',
+                'unit_price': precio_unitario,
             }
         ],
-        "back_urls": {
-            "success": "http://localhost:8000",
-            "failure": "http://localhost:8000/fallo",
-            "pending": "http://localhost:8000/pending"
+        'back_urls': {
+            'success': 'http://localhost:8000',
+            'failure': 'http://localhost:8000/fallo',
+            'pending': 'http://localhost:8000/pending'
             },
-        "auto_return": "approved",
-        "external_reference": external_reference,
-        "binary_mode": True,
+        'auto_return': 'approved',
+        'external_reference': external_reference,
+        'binary_mode': True,
     }
-    """
-        "payer": {
-            "name": "Nombre Test",
-            "surname": "Apellido",
-            "email": "test_user_85852805@testuser.com",
-            "identification": {
-                "type": "DNI",
-                "number": "12345678"
-                }
-            },
-    """
     """ Agregar fecha de expiracion a la preference
         utc_offset_sec = time.altzone if time.localtime().tm_isdst else time.timezone
         utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
@@ -328,11 +318,11 @@ def crear_preference_api_mercadopago(request, obra):
     """
     preferenceResult = mp.create_preference(preference)
     preference = preferenceResult["response"]
-    print(preferenceResult)
     return preference
 
 
 @login_required
+@require_POST
 def grabar_compra(request, obra_id):
     obra = get_object_or_404(Obra, id=obra_id)
     if request.user == obra.usuario:
@@ -352,28 +342,17 @@ def grabar_compra(request, obra_id):
             'mensaje': mensaje})
 
     cantidad_obras = request.session['cantidad_obras']
-    email_customer = "test_user_85852805@testuser.com"
-    payer_id = buscar_id_customer_api_mercadopago(request, email_customer)
-    if payer_id is None:
-        mensaje = ("no pudimos encontrar su numero de cliente en mercadopago,"
-                   " por favor intente nuevamente.")
-        return render(request, 'symbiarts_app/error_generico.html', {
-            'mensaje': mensaje})
-
-    print(payer_id)
-    external_reference = request.session['external_reference']
-    id_pago = buscar_pago_api_mercadopago(request, external_reference, payer_id)
+    id_pago = int(request.POST["payment_id"])
     if id_pago is None:
         mensaje = ("no pudimos encontrar el pago realizado en mercadopago, "
                    "por favor intente nuevamente.")
         return render(request, 'symbiarts_app/error_generico.html', {
             'mensaje': mensaje})
 
-    print("payer_id" + id_pago)
-    """
     venta_obra = VentaObra.objects.create(
         cliente=request.user,
-        metodo_pago='Mercadopago')
+        metodo_pago='Mercadopago',
+        id_pago=id_pago)
 
     DetalleVentaObra.objects.create(
         venta_obra=venta_obra,
@@ -382,48 +361,8 @@ def grabar_compra(request, obra_id):
         cantidad_obra=cantidad_obras)
     obra.stock -= cantidad_obras
     obra.save()
-    """
     request.session['compra_exitosa'] = True
-    # return redirect('symbiarts_app:compra_exitosa', nro_compra=venta_obra.id)
-    return redirect('symbiarts_app:compra_exitosa', nro_compra=999999)
-
-
-@login_required
-def buscar_id_customer_api_mercadopago(request, email_customer):
-    mp = mercadopago.MP(settings.MP_ACCESS_TOKEN)
-    customer = mp.get("/v1/customers/search", {"email": email_customer})
-    print("Customer:")
-    print(customer)
-    if customer["response"]["results"]:
-        id_customer = customer["response"]["results"][0]["id"]
-    else:
-        customer = crear_customer_api_mercadopago(request, email_customer)
-        id_customer = customer["id"]
-    return id_customer
-
-
-def crear_customer_api_mercadopago(request, email_customer):
-    mp = mercadopago.MP(settings.MP_ACCESS_TOKEN)
-    response = mp.post("/v1/customers", {"email": email_customer})
-    return response["response"]
-
-
-@login_required
-def buscar_pago_api_mercadopago(request, external_reference, payer_id):
-    mp = mercadopago.MP(settings.MP_ACCESS_TOKEN)
-    payment_data = {
-        'payer.id': payer_id,
-        "external_reference": external_reference
-    }
-    searchResult = mp.get("/v1/payments/search", payment_data)
-    if searchResult["response"]["results"]:
-        ultimoElemento = searchResult["response"]["results"].pop()
-        print("Ultimo elemento:")
-        print(ultimoElemento)
-        id_pago = ultimoElemento["id"]
-    else:
-        id_pago = None
-    return id_pago
+    return redirect('symbiarts_app:compra_exitosa', nro_compra=venta_obra.id)
 
 
 @login_required
@@ -441,11 +380,71 @@ def comprar_carrito(request):
     carrito = Carrito(request)
     # precio_total = carrito.obtener_precio_total()
     # cantidad_obras_carrito = carrito.__len__()
+    preference = crear_preference_api_mercadopago_carrito(request)
     return render(request, 'symbiarts_app/confirmar_compra_carrito.html', {
-        'carrito': carrito})
+        'carrito': carrito,
+        'preference': preference,
+        'public_key': settings.MP_PUBLIC_KEY})
 
 
 @login_required
+def crear_preference_api_mercadopago_carrito(request):
+    carrito = request.session.get(settings.CARRITO_SESSION_ID)
+
+    obra_ids = carrito.keys()
+    obras = Obra.objects.filter(id__in=obra_ids)
+    items = []
+
+    for obra in obras:
+        id_obra = str(obra.id)
+        nombre_obra = obra.nombre
+        descripcion = obra.descripcion
+        archivo_obra = obra.archivos.first()
+        url_archivo = settings.URL_SYMBIARTS + archivo_obra.archivo.url
+        cantidad_obras = carrito[str(obra.id)]['cantidad']
+        precio_unitario = float(obra.precio)
+        item = {
+            'id': id_obra,
+            'title': nombre_obra,
+            'description': descripcion,
+            'picture_url': url_archivo,
+            'quantity': cantidad_obras,
+            'currency_id': 'ARS',
+            'unit_price': precio_unitario,
+            }
+        items.append(item)
+
+    external_reference = 'symbiarts'
+
+    mp = mercadopago.MP(settings.MP_ACCESS_TOKEN)
+    preference = {
+        'items': items,
+        'back_urls': {
+            'success': 'http://localhost:8000',
+            'failure': 'http://localhost:8000/fallo',
+            'pending': 'http://localhost:8000/pending'
+            },
+        'auto_return': 'approved',
+        'external_reference': external_reference,
+        'binary_mode': True,
+    }
+    """ Agregar fecha de expiracion a la preference
+        utc_offset_sec = time.altzone if time.localtime().tm_isdst else time.timezone
+        utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
+        datetime.datetime.now().replace(tzinfo=datetime.timezone(offset=utc_offset)).isoformat()
+
+        -En el json:
+        "expires": True,
+        "expiration_date_from": "2017-02-01T12:00:00.000-04:00",
+        "expiration_date_to": "2017-02-28T12:00:00.000-04:00"
+    """
+    preferenceResult = mp.create_preference(preference)
+    preference = preferenceResult["response"]
+    return preference
+
+
+@login_required
+@require_POST
 def grabar_compra_carrito(request):
     carrito = request.session.get(settings.CARRITO_SESSION_ID)
 
@@ -475,9 +474,17 @@ def grabar_compra_carrito(request):
             return render(request, 'symbiarts_app/error_generico.html', {
                 'mensaje': mensaje})
 
+    id_pago = int(request.POST["payment_id"])
+    if id_pago is None:
+        mensaje = ("no pudimos encontrar el pago realizado en mercadopago, "
+                   "por favor intente nuevamente.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
     venta_obra = VentaObra.objects.create(
         cliente=request.user,
-        metodo_pago='Mercadopago')
+        metodo_pago='Mercadopago',
+        id_pago=id_pago)
 
     for obra in obras:
         cantidad_obras = carrito[str(obra.id)]['cantidad']
@@ -575,3 +582,23 @@ def detalle_venta(request, venta_id):
                    "otro usuario.")
         return render(request, 'symbiarts_app/error_generico.html', {
             'mensaje': mensaje})
+
+
+@login_required
+def mis_obras(request):
+    queryset = Obra.objects.filter(
+        usuario=request.user).order_by('fecha_publicacion')
+    page = request.GET.get('page')
+    paginator = Paginator(queryset, 5)
+    try:
+        obras = paginator.page(page)
+    except PageNotAnInteger:
+        # Volver a la primera página
+        obras = paginator.page(1)
+    except EmptyPage:
+        # Voy a la ultima página si llega una inexistente
+        obras = paginator.page(paginator.num_pages)
+    formBuscar = FormBuscar()
+    return render(request, 'symbiarts_app/mis_obras.html', {
+        'obras': obras,
+        'formBuscar': formBuscar})

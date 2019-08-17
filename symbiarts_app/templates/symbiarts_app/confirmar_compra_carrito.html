@@ -44,9 +44,14 @@
                 <p>Obras: {{ carrito|length }}</p>
                 <p>Envío: Acordar con el vendedor</p>
                 <p>Precio total: {{ carrito.obtener_precio_total }}</p>
-                <form action="{% url 'symbiarts_app:grabar_compra_carrito' %}" method="post">
+                <form action="{% url 'symbiarts_app:grabar_compra_carrito' %}" method="POST">
                     {% csrf_token %}
-                    <button class="btn btn-success">Confirmar Compra</button>
+                    <script
+                        src="https://www.mercadopago.com.ar/integrations/v1/web-payment-checkout.js"
+                        data-public-key= "{{ public_key }}"
+                        data-preference-id="{{ preference.id }}"
+                        data-button-label="Confirmar compra">
+                    </script>
                 </form>
             </div>
         </div>

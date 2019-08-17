@@ -19,8 +19,8 @@ urlpatterns = [
     path('obra/<int:pk>/', views.detalle_obra, name='detalle_obra'),
     path('obra/nueva', views.nueva_obra, name='nueva_obra'),
     path('obra/<int:pk>/pausar/', views.pausar_obra, name='pausar_obra'),
-    path('obra/<int:pk>/reactivar/', views.reactivar_obra,
-         name='reactivar_obra'),
+    path('obra/<int:pk>/activar/', views.activar_obra,
+         name='activar_obra'),
     path('obra/<int:pk>/comentar/', views.nuevo_comentario,
          name='nuevo_comentario'),
     path('compras/', views.lista_compras, name='lista_compras'),
@@ -30,5 +30,6 @@ urlpatterns = [
     path('venta/<int:venta_id>/', views.detalle_venta,
          name='detalle_venta'),
     path('comentario/<int:pk>/eliminar/', views.eliminar_comentario,
-         name='eliminar_comentario')
+         name='eliminar_comentario'),
+    path('mis_obras/', views.mis_obras, name='mis_obras'),
 ]
