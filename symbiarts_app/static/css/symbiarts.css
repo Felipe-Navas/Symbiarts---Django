@@ -56,3 +56,34 @@ p {
 #myCarousel .carousel-indicators > li.active img {
     opacity: 0.7;
 }
+
+.tabla-carrito {
+    font-size: 16px;
+}
+
+.card_lista_obras a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.precio_lista_obras {
+    float: right;
+}
+
+@media (min-width: 576px) {
+    .card-columns {
+        column-count: 1;
+    }
+}
+
+@media (min-width: 768px) {
+    .card-columns {
+        column-count: 2;
+    }
+}
+
+@media (min-width: 992px) {
+    .card-columns {
+        column-count: 3;
+    }
+}

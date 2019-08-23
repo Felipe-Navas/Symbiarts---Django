@@ -22,23 +22,27 @@
         {% bootstrap_form_errors file_form %}
 
         {% bootstrap_field form.nombre placeholder='Ingrese el nombre de la obra' %}
-        {% bootstrap_field form.categoria %}
+        <div class="row">
+            {% bootstrap_field form.categoria form_group_class='form-group col-sm-6' %}
+            {% bootstrap_field form.stock placeholder='Ingrese el stock de la obra' form_group_class='form-group col-sm-6' %}
+        </div>
         {% bootstrap_field form.descripcion placeholder='Ingrese una descripcion para la obra' %}
-        {% bootstrap_field form.stock placeholder='Ingrese el stock de la obra' %}
         <div style="display: none">
             {% bootstrap_field form.estado %}
         </div>
         {% bootstrap_field form.dimensiones placeholder='Ingrese las dimensiones de la obra' %}
-        {% bootstrap_field form.precio placeholder='Ingrese el precio de la obra' %}
-        {% bootstrap_field form.tipo %}
+        <div class="row">
+            {% bootstrap_field form.precio placeholder='Ingrese el precio de la obra' form_group_class='form-group col-sm-6' %}
+            {% bootstrap_field form.tipo form_group_class='form-group col-sm-6' %}
+        </div>
 
         <label for="{{ file_form.archivo.id_for_label }}">Archivos de la Obra:</label>
         {% bootstrap_field file_form.archivo show_label=False %}
 
         <input type="hidden" name="next" value="{{ request.path }}">
         {% buttons %}
-            <button type="submit" class="btn btn-primary">Confirmar</button>
-            <a href="javascript:window.history.back()" class="btn btn-outline-secondary" role="button">Cancelar</a>
+            <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Confirmar</button>
+            <a href="javascript:window.history.back()" class="btn btn-outline-warning" role="button"><i class="fas fa-ban"></i> Cancelar</a>
         {% endbuttons %}
     </form>
 {% endblock %}

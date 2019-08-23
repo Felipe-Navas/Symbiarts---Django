@@ -17,7 +17,7 @@
                     <div class="col">
                         <h4>Compraste {{ compra.fecha|naturaltime }}
                             <span>
-                                <a href="{% url 'symbiarts_app:detalle_compra' compra_id=compra.id %}" class="btn btn-primary float-right">Detalle</a>
+                                <a href="{% url 'symbiarts_app:detalle_compra' compra_id=compra.id %}" class="btn btn-primary float-right"><i class="fas fa-file-alt"></i> Detalle</a>
                             </span>
                         </h4>
                     </div>
@@ -74,7 +74,7 @@
         {% empty %}
             <div class="jumbotron text-xs-center">
                 <h2 class="display-4">Aún no has realizado ninguna compra.</h2>
-                <a class="btn btn-primary" href="{% url 'symbiarts_app:lista_obras' %}" role="button">Comprá tu primer obra</a>
+                <a class="btn btn-primary" href="{% url 'symbiarts_app:lista_obras' %}" role="button"><i class="fas fa-store"></i> Comprá tu primer obra</a>
             </div>
         {% endfor %}
     </ul>
