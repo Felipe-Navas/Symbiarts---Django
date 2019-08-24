@@ -21,20 +21,21 @@
                 <div class="jumbotron text-xs-center">
                     <h1 class="display-4">Tu carrito esta vacío.</h1>
                     <hr>
-                    <a href="{% url 'symbiarts_app:lista_obras' %}" class="btn btn-primary">Seguir comprando</a>
+                    <a href="{% url 'symbiarts_app:lista_obras' %}" class="btn btn-primary"><i class="fas fa-store"></i> Comprá alguna obra</a>
                 </div>
             {% endif %}
         {% endwith %}
         {% if carrito|length > 0 %}
             <div class="row">
-                <table class="table table-hover">
-                    <thead class="thead-dark">
+                <table class="tabla-carrito table table-hover">
+                    <thead class="table-dark">
                         <tr>
                             <th>Obra</th>
                             <th>Descripción</th>
                             <th>Cantidad</th>
                             <th>Precio unitario</th>
                             <th>Subtotal</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -52,20 +53,22 @@
                                             {% endwith %}
                                         </a>
                                     </td>
-                                    <td>{{ obra.nombre }}</td>
-                                    <td>
+                                    <td class="align-middle">{{ obra.nombre }}</td>
+                                    <td class="align-middle">
                                         <form class="form-inline" action="{% url 'carrito:agregar_obra_carrito' obra.id %}" method="post">
                                             {% csrf_token %}
                                             {% bootstrap_messages %}
                                             {% bootstrap_form_errors item.form_agregar_obra_carrito %}
                                             {% bootstrap_field item.form_agregar_obra_carrito.cantidad show_label=False %}
                                             {% bootstrap_field item.form_agregar_obra_carrito.actualizar_cantidad %}
-                                            <button type="submit" class="btn btn-info ml-2"><i class="fas fa-sync-alt"></i></button>
-                                            <a href="{% url 'carrito:eliminar_obra_carrito' obra.id %}" class="btn btn-danger ml-2"><i class="far fa-trash-alt"></i></a>
+                                            <button type="submit" class="btn btn-info ml-1"><i class="fas fa-sync-alt"></i></button>
                                         </form>
                                     </td>
-                                    <td>${{ item.precio }}</td>
-                                    <td>${{ item.precio_total }}</td>
+                                    <td class="align-middle">${{ item.precio }}</td>
+                                    <td class="align-middle">${{ item.precio_total }}</td>
+                                    <td class="align-middle">
+                                        <a href="{% url 'carrito:eliminar_obra_carrito' obra.id %}" class="btn btn-danger ml-1"><i class="far fa-trash-alt"></i></a>
+                                    </td>
                                 </tr>
                             {% endwith %}
                         {% endfor %}
@@ -73,12 +76,12 @@
                             <td><b>Total</b></td>
                             <td colspan="3"></td>
                             <td colspan="num"><b>${{ carrito.obtener_precio_total }}</b></td>
+                            <td><a href="{% url 'symbiarts_app:comprar_carrito' %}" class="btn btn-success"><i class="fas fa-dollar-sign"></i> Comprar</a></td>
                         </tr>
                     </tbody>
                 </table>
                 <div class="form-group">
-                    <a href="{% url 'symbiarts_app:lista_obras' %}" class="btn btn-primary">Seguir comprando</a>
-                    <a href="{% url 'symbiarts_app:comprar_carrito' %}" class="btn btn-success">Comprar</a>
+                    <a href="{% url 'symbiarts_app:lista_obras' %}" class="btn btn-primary"><i class="fas fa-store"></i> Seguir comprando</a>
                 </div>
             </div>
         {% endif %}

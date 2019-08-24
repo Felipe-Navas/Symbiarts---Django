@@ -74,27 +74,31 @@
                     <p class="display-4">${{ obra.precio }}</p>
                 {% endif %}
                 {% if obra.usuario == user %}
-                    <a class="btn btn-outline-secondary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}">Editar</a>
+                    <a class="btn btn-outline-primary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}"><i class="fas fa-edit"></i> Editar</a>
                     {% if obra.tipo == 'AS' %}
                         {% if obra.pausada == True %}
-                            <a class="btn btn-outline-success" href="{% url 'symbiarts_app:activar_obra' pk=obra.pk %}">Activar</a>
+                            <a class="btn btn-outline-success" href="{% url 'symbiarts_app:activar_obra' pk=obra.pk %}"><i class="fas fa-play-circle"></i> Activar</a>
                         {% else %}
-                            <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:pausar_obra' pk=obra.pk %}">Pausar</a>
+                            <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:pausar_obra' pk=obra.pk %}"><i class="fas fa-pause-circle"></i> Pausar</a>
                         {% endif %}
                     {% endif %}
                 {% endif %}
                 {% if obra.pausada == False and obra.usuario != user and obra.tipo == 'AS' %}
-                    <form class="form-inline" action="{% url 'symbiarts_app:orquestar_compra_carrito' obra.id %}" method="post">
+                    <form class="form" action="{% url 'symbiarts_app:orquestar_compra_carrito' obra.id %}" method="post">
                         {% csrf_token %}
                         {% bootstrap_messages %}
                         {% bootstrap_form_errors formCarrito %}
-                        <div class="form-row mb-2">
-                            <label class="mr-2" for="id_cantidad">Cantidad</label>
-                            {% bootstrap_field formCarrito.cantidad show_label=False %}
+                        <div class="row">
+                            <div class="col-xl-5 col-lg-5 col-md-8">
+                                <label class="mr-2" for="id_cantidad">Cantidad</label>
+                                {% bootstrap_field formCarrito.cantidad show_label=False %}
+                            </div>
                         </div>
-                        <div class="form-row">
-                            <button type="submit" class="btn btn-outline-success" name="accion" value="comprar">Comprar</button>
-                            <button type="submit" class="btn btn-outline-primary ml-2" name="accion" value="agregar_al_carrito">Agregar al carrito</button>
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-outline-success" name="accion" value="comprar"><i class="fas fa-dollar-sign"></i> Comprar</button>
+                                <button type="submit" class="btn btn-outline-primary mt-lg-0 mt-1" name="accion" value="agregar_al_carrito"><i class="fas fa-shopping-cart"></i> Agregar al carrito</button>
+                            </div>
                         </div>
                     </form>
                 {% endif %}
@@ -131,7 +135,7 @@
                         <div class="col-4 text-right">
                             {{ comentario.fecha|naturaltime }}
                             {% if comentario.usuario == user %}
-                                <a href="{% url 'symbiarts_app:eliminar_comentario' pk=comentario.pk %}"><i class="far fa-trash-alt"></i></a>
+                                <a href="{% url 'symbiarts_app:eliminar_comentario' pk=comentario.pk %}" class="btn btn-danger"><i class="far fa-trash-alt"></i></a>
                             {% endif %}
                         </div>
                     </div>

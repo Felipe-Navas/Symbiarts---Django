@@ -12,7 +12,7 @@
                 {% bootstrap_messages %}
                 {% bootstrap_form_errors formBuscar %}
                 {% bootstrap_field formBuscar.cadena show_label=False placeholder='Buscar' %}
-                <button class="btn btn-outline-info ml-2 my-2 my-sm-0" type="submit">Buscar</button>
+                <button class="btn btn-outline-info ml-2 my-2 my-sm-0" type="submit"><i class="fas fa-search"></i> Buscar</button>
             </form>
         {% endif %}
         <ul class="navbar-nav ml-auto">
@@ -56,8 +56,8 @@
                         <a class="dropdown-item disabled" href="#" aria-disabled="true">Grupos</a>
                     </div>
                 {% else %}
-                    <a class="btn btn-secondary" href="{% url 'login' %}">Iniciar sesión</a>
-                    <a class="btn btn-primary" href="{% url 'signup' %}">Regístrate</a>
+                    <a class="btn btn-secondary ml-1" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</a>
+                    <a class="btn btn-primary" href="{% url 'signup' %}"><i class="fas fa-clipboard-list"></i> Regístrate</a>
                 {% endif %}
             </li>
         </ul>
