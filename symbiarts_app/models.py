@@ -17,7 +17,7 @@ class Obra(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
 
     # Debe ser no nulo.
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    artista = models.ForeignKey(User, on_delete=models.CASCADE)
 
     # Debe ser no nulo y seleccionarse de las cargadas en el sistema.
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
@@ -66,11 +66,11 @@ class Obra(models.Model):
     def obtener_stock(self):
         return self.stock
 
-    def cantidad_ventas_obra(self):
-        return sum(
-            detalle['cantidad_obra']
-            for detalle in self.obra_detalle_venta_obra.values()
-            )
+    def obtener_cantidad_ventas_obra(self):
+        cantidad_obras = 0
+        for detalle in DetalleVentaObra.objects.filter(obra_id=self.id):
+            cantidad_obras += detalle.cantidad_obra
+        return cantidad_obras
 
     def __str__(self):
         return self.nombre
@@ -112,6 +112,11 @@ class VentaObra(models.Model):
             for detalle in self.detalle_venta_obra.values()
             )
 
+    def obtener_img_venta_artista(self, artista_id):
+        for detalle in self.detalle_venta_obra.values():
+            if artista_id == detalle['obra_artista_id']:
+                return detalle
+
     def __str__(self):
         return "Venta {}".format(self.pk)
 
@@ -119,12 +124,14 @@ class VentaObra(models.Model):
 class DetalleVentaObra(models.Model):
     venta_obra = models.ForeignKey(
         VentaObra, on_delete=models.CASCADE, related_name='detalle_venta_obra')
-    obra = models.ForeignKey(Obra, on_delete=models.SET_NULL, null=True,
-                             related_name='obra_detalle_venta_obra')
     precio_obra = models.DecimalField(
         max_digits=6,
         decimal_places=2)
     cantidad_obra = models.IntegerField()
+    obra_id = models.IntegerField()
+    obra_nombre = models.CharField(max_length=50)
+    obra_url_imagen = models.CharField(max_length=100)
+    obra_artista = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def precio_total(self):
         return self.precio_obra * self.cantidad_obra

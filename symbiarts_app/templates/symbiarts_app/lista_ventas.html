@@ -7,6 +7,7 @@
 {% endblock %}
 
 {% load humanize %}
+{% load model_tags %}
 
 {% block content %}
     <ul class="list-group mt-3">
@@ -24,40 +25,31 @@
                 </div>
                 <div class="row p-3">
                     <div class="col-2">
-                        {% for detalle_venta_obra_img in venta.detalle_venta_obra.all %}
-                            {% with obra=detalle_venta_obra_img.obra %}
-                                {% if forloop.first %} <!-- obra.usuario == user -->
-                                    {% with archivo_obra=obra.archivos.first %}
-                                        {% if archivo_obra.archivo.url %}
-                                            <img src="{{ archivo_obra.archivo.url }}" class="img-fluid" alt="{{ obra.nombre }}">
-                                        {% else %}
-                                            <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}">
-                                        {% endif %}
-                                    {% endwith %}
-                                {% endif %}
-                            {% endwith %}
-                        {% endfor %}
+                        {% obtener_img_venta_artista venta user.id as detalle_venta %}
+                        {% if detalle_venta.obra_url_imagen %}
+                            <img src="{{ detalle_venta.obra_url_imagen }}" class="img-fluid" alt="{{ detalle_venta.obra_nombre }}">
+                        {% else %}
+                            <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ detalle_venta.obra_nombre }}">
+                        {% endif %}
                     </div>
                     <div class="col">
                         {% for detalle in venta.detalle_venta_obra.all %}
-                            {% with obra=detalle.obra %}
-                                {% if obra.usuario == user %}
-                                    <div class="row">
-                                        <div class="col">
-                                            {% if obra.pk > 0 %}
-                                                <p class="mb-0"><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></p>
-                                            {% else %}
-                                                <p>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</p>
-                                            {% endif %}
-                                            {% if detalle.cantidad_obra == 1 %}
-                                                <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
-                                            {% else %}
-                                                <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
-                                            {% endif %}
-                                        </div>
+                            {% if detalle.obra_artista == user %}
+                                <div class="row">
+                                    <div class="col">
+                                        {% if detalle.obra_id > 0 %}
+                                            <p class="mb-0"><a href="{% url 'symbiarts_app:detalle_obra' pk=detalle.obra_id %}">{{ detalle.obra_nombre }}</a></p>
+                                        {% else %}
+                                            <p>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</p>
+                                        {% endif %}
+                                        {% if detalle.cantidad_obra == 1 %}
+                                            <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
+                                        {% else %}
+                                            <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
+                                        {% endif %}
                                     </div>
-                                {% endif %}
-                            {% endwith %}
+                                </div>
+                            {% endif %}
                         {% endfor %}
                     </div>
                     <div class="col">

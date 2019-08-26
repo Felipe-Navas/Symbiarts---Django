@@ -73,7 +73,7 @@
                 {% if obra.precio and obra.tipo == 'AS' %}
                     <p class="display-4">${{ obra.precio }}</p>
                 {% endif %}
-                {% if obra.usuario == user %}
+                {% if obra.artista == user %}
                     <a class="btn btn-outline-primary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}"><i class="fas fa-edit"></i> Editar</a>
                     {% if obra.tipo == 'AS' %}
                         {% if obra.pausada == True %}
@@ -83,7 +83,7 @@
                         {% endif %}
                     {% endif %}
                 {% endif %}
-                {% if obra.pausada == False and obra.usuario != user and obra.tipo == 'AS' %}
+                {% if obra.pausada == False and obra.artista != user and obra.tipo == 'AS' %}
                     <form class="form" action="{% url 'symbiarts_app:orquestar_compra_carrito' obra.id %}" method="post">
                         {% csrf_token %}
                         {% bootstrap_messages %}

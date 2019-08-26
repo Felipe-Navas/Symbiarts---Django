@@ -24,21 +24,19 @@
                         </thead>
                         <tbody>
                             {% for detalle in venta.detalle_venta_obra.all %}
-                                {% with obra=detalle.obra %}
-                                    {% if obra.usuario == user %}
-                                        <tr>
-                                            <td>
-                                                <h6><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></h6>
-                                            </td>
-                                            <td>
-                                                <h6>{{ detalle.cantidad_obra }}</h6>
-                                            </td>
-                                            <td class="text-right">
-                                                <h6>${{ detalle.precio_total }}</h6>
-                                            </td>
-                                        </tr>
-                                    {% endif %}
-                                {% endwith %}
+                                {% if detalle.obra_artista == user %}
+                                    <tr>
+                                        <td>
+                                            <h6><a href="{% url 'symbiarts_app:detalle_obra' pk=detalle.obra_id %}">{{ detalle.obra_nombre }}</a></h6>
+                                        </td>
+                                        <td>
+                                            <h6>{{ detalle.cantidad_obra }}</h6>
+                                        </td>
+                                        <td class="text-right">
+                                            <h6>${{ detalle.precio_total }}</h6>
+                                        </td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
                             <tr style="border-top: 1px solid rgba(0,0,0,.125);">
                                 <td><h5>Total Obras</h5></td>
@@ -60,43 +58,37 @@
                 <div class="card mt-2 p-3">
                     <h4>Detalle obras</h4>
                     {% for detalle in venta.detalle_venta_obra.all %}
-                        {% if detalle.obra.usuario == user %}
+                        {% if detalle.obra_artista == user %}
                             {% if forloop.counter > 1 %}
                                 <hr class="m-0">
                             {% endif %}
                             <div class="row p-3">
-                                {% with obra=detalle.obra %}
-                                    <div class="col">
-                                        {% with archivo_obra=obra.archivos.first %}
-                                            {% if archivo_obra.archivo.url %}
-                                                <img src="{{ archivo_obra.archivo.url }}" class="img-fluid" alt="{{ obra.nombre }}">
-                                            {% else %}
-                                                <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}">
-                                            {% endif %}
-                                        {% endwith %}
+                                <div class="col">
+                                    {% if detalle.obra_url_imagen %}
+                                        <img src="{{ detalle.obra_url_imagen }}" class="img-fluid" alt="{{ detalle.obra_nombre }}">
+                                    {% else %}
+                                        <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ detalle.obra_nombre }}">
+                                    {% endif %}
+                                </div>
+                                <div class="col">
+                                    {% if detalle.obra_id > 0 %}
+                                        <h6><a href="{% url 'symbiarts_app:detalle_obra' pk=detalle.obra_id %}">{{ detalle.obra_nombre }}</a></h6>
+                                    {% else %}
+                                        <p>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</p>
+                                    {% endif %}
+                                    {% if detalle.cantidad_obra == 1 %}
+                                        <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
+                                    {% else %}
+                                        <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
+                                    {% endif %}
+                                    <div class="float-left">
+                                        <i class="fas fa-user-circle fa-3x"></i>
                                     </div>
-                                    <div class="col">
-                                        {% if obra.pk > 0 %}
-                                            <h6><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></h6>
-                                        {% else %}
-                                            <p>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</p>
-                                        {% endif %}
-                                        {% if detalle.cantidad_obra == 1 %}
-                                            <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
-                                        {% else %}
-                                            <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
-                                        {% endif %}
-                                        <div class="float-left">
-                                            <i class="fas fa-user-circle fa-3x"></i>
-                                        </div>
-                                        <div class="float-left pl-2">
-                                            <p class="font-weight-bold mb-0">Comprador</p>
-                                            {% with obra=detalle.obra %}
-                                                <p>{{ obra.usuario }}</p>
-                                            {% endwith %}
-                                        </div>
+                                    <div class="float-left pl-2">
+                                        <p class="font-weight-bold mb-0">Comprador</p>
+                                        <p>{{ detalle.obra_artista }}</p>
                                     </div>
-                                {% endwith %}
+                                </div>
                             </div>
                         {% endif %}
                     {% endfor %}
