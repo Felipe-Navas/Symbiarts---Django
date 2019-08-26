@@ -24,36 +24,30 @@
                 </div>
                 <div class="row p-3">
                     <div class="col-2">
-                        {% with detalle_venta_obra_first=compra.detalle_venta_obra.first %}
-                            {% with obra=detalle_venta_obra_first.obra  %}
-                                {% with archivo_obra=obra.archivos.first %}
-                                    {% if archivo_obra.archivo.url %}
-                                        <img src="{{ archivo_obra.archivo.url }}" class="img-fluid" alt="{{ obra.nombre }}">
-                                    {% else %}
-                                        <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}">
-                                    {% endif %}
-                                {% endwith %}
-                            {% endwith %}
+                        {% with detalle=compra.detalle_venta_obra.first %}
+                            {% if detalle.obra_url_imagen %}
+                                <img src="{{ detalle.obra_url_imagen }}" class="img-fluid" alt="{{ detalle.obra_nombre }}">
+                            {% else %}
+                                <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ detalle.obra_nombre }}">
+                            {% endif %}
                         {% endwith %}
                     </div>
                     <div class="col">
                         {% for detalle in compra.detalle_venta_obra.all %}
-                            {% with obra=detalle.obra %}
-                                <div class="row">
-                                    <div class="col">
-                                        {% if obra.pk > 0 %}
-                                            <p class="mb-0"><a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">{{ obra.nombre }}</a></p>
-                                        {% else %}
-                                            <p>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</p>
-                                        {% endif %}
-                                        {% if detalle.cantidad_obra == 1 %}
-                                            <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
-                                        {% else %}
-                                            <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
-                                        {% endif %}
-                                    </div>
+                            <div class="row">
+                                <div class="col">
+                                    {% if detalle.obra_id > 0 %}
+                                        <p class="mb-0"><a href="{% url 'symbiarts_app:detalle_obra' pk=detalle.obra_id %}">{{ detalle.obra_nombre }}</a></p>
+                                    {% else %}
+                                        <p>Ups <i class="far fa-sad-tear"></i> esta obra fue eliminada</p>
+                                    {% endif %}
+                                    {% if detalle.cantidad_obra == 1 %}
+                                        <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidad)</p>
+                                    {% else %}
+                                        <p>Total: ${{ detalle.precio_total }} ({{ detalle.cantidad_obra }} unidades)</p>
+                                    {% endif %}
                                 </div>
-                            {% endwith %}
+                            </div>
                         {% endfor %}
                     </div>
                     <div class="col">
@@ -62,9 +56,7 @@
                                 <i class="fas fa-user-circle fa-3x"></i>
                                 <div class="col pl-2">
                                     <p class="font-weight-bold mb-0">Vendedor</p>
-                                    {% with obra=detalle.obra %}
-                                        <p>{{ obra.usuario }}</p>
-                                    {% endwith %}
+                                    <p>{{ detalle.obra_artista }}</p>
                                 </div>
                             </div>
                         {% endfor %}

@@ -72,7 +72,7 @@ def nueva_obra(request):
         files = request.FILES.getlist('archivo')
         if form.is_valid() and file_form.is_valid():
             obra = form.save(commit=False)
-            obra.usuario = request.user
+            obra.artista = request.user
             obra.save()
             for f in files:
                 obra_archivo = ObraArchivo(archivo=f, obra=obra)
@@ -91,9 +91,9 @@ def nueva_obra(request):
 @login_required
 def editar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
-    if request.user != obra.usuario:
+    if request.user != obra.artista:
         mensaje = ("no puede editar esta obra porque le pertenece a otro "
-                   "usuario.")
+                   "artista.")
         return render(request, 'symbiarts_app/error_generico.html', {
             'mensaje': mensaje})
 #    obra_archivo = ObraArchivo.objects.filter(obra__pk=pk)
@@ -106,7 +106,7 @@ def editar_obra(request, pk):
         files = request.FILES.getlist('archivo')
         if form.is_valid() and file_form.is_valid():
             obra = form.save(commit=False)
-            obra.id_usuario = request.user
+            obra.artista = request.user
             obra.save()
             # Ver si borro to lo que tiene relacionado el ObraArchivos
             for f in files:
@@ -127,7 +127,7 @@ def editar_obra(request, pk):
 @login_required
 def pausar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
-    if request.user == obra.usuario:
+    if request.user == obra.artista:
         if obra.tipo == 'AW':
             mensaje = ("no puede pausar esta obra porque es de tipo ArtWork.")
             return render(request, 'symbiarts_app/error_generico.html', {
@@ -139,7 +139,7 @@ def pausar_obra(request, pk):
         return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
     else:
         mensaje = ("no puede pausar esta obra porque le pertenece a otro "
-                   "usuario.")
+                   "artista.")
         return render(request, 'symbiarts_app/error_generico.html', {
             'mensaje': mensaje})
 
@@ -147,7 +147,7 @@ def pausar_obra(request, pk):
 @login_required
 def activar_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
-    if request.user == obra.usuario:
+    if request.user == obra.artista:
         if obra.tipo == 'AW':
             mensaje = ("no puede activar esta obra porque es de tipo ArtWork.")
             return render(request, 'symbiarts_app/error_generico.html', {
@@ -159,7 +159,7 @@ def activar_obra(request, pk):
         return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
     else:
         mensaje = ("no puede activar esta obra porque le pertenece a otro "
-                   "usuario.")
+                   "artista.")
         return render(request, 'symbiarts_app/error_generico.html', {
             'mensaje': mensaje})
 
@@ -231,7 +231,7 @@ def buscar_obras(request):
 @require_POST
 def orquestar_compra_carrito(request, obra_id):
     obra = get_object_or_404(Obra, pk=obra_id)
-    if request.user == obra.usuario:
+    if request.user == obra.artista:
         mensaje = ("no puede comprar esta obra porque le pertenece a usted "
                    "mismo!.")
         return render(request, 'symbiarts_app/error_generico.html', {
@@ -325,7 +325,7 @@ def crear_preference_api_mercadopago_obra(request, obra):
 @require_POST
 def grabar_compra(request, obra_id):
     obra = get_object_or_404(Obra, id=obra_id)
-    if request.user == obra.usuario:
+    if request.user == obra.artista:
         mensaje = ("no puede comprar esta obra porque le pertenece a usted "
                    "mismo!.")
         return render(request, 'symbiarts_app/error_generico.html', {
@@ -354,11 +354,16 @@ def grabar_compra(request, obra_id):
         metodo_pago='Mercadopago',
         id_pago=id_pago)
 
+    archivo_obra = obra.archivos.first()
     DetalleVentaObra.objects.create(
         venta_obra=venta_obra,
-        obra=obra,
         precio_obra=obra.precio,
-        cantidad_obra=cantidad_obras)
+        cantidad_obra=cantidad_obras,
+        obra_id=obra.id,
+        obra_nombre=obra.nombre,
+        obra_url_imagen=archivo_obra.archivo.url,
+        obra_artista=obra.artista)
+
     obra.stock -= cantidad_obras
     obra.save()
     request.session['compra_exitosa'] = True
@@ -453,8 +458,8 @@ def grabar_compra_carrito(request):
 
     # Controlo que todas las obras del carrito se puedan comprar
     for obra in obras:
-        # Controlo que sean de otro usuario
-        if request.user == obra.usuario:
+        # Controlo que sean de otro artista
+        if request.user == obra.artista:
             mensaje = ("una de las obras del carrito, no se puede comprar "
                        "porque le pertenece a usted mismo!.")
             return render(request, 'symbiarts_app/error_generico.html', {
@@ -488,11 +493,16 @@ def grabar_compra_carrito(request):
 
     for obra in obras:
         cantidad_obras = carrito[str(obra.id)]['cantidad']
+        archivo_obra = obra.archivos.first()
         DetalleVentaObra.objects.create(
             venta_obra=venta_obra,
-            obra=obra,
             precio_obra=obra.precio,
-            cantidad_obra=cantidad_obras)
+            cantidad_obra=cantidad_obras,
+            obra_id=obra.id,
+            obra_nombre=obra.nombre,
+            obra_url_imagen=archivo_obra.archivo.url,
+            obra_artista=obra.artista)
+
         obra.stock -= cantidad_obras
         obra.save()
 
@@ -539,7 +549,7 @@ def detalle_compra(request, compra_id):
 @login_required
 def lista_ventas(request):
     queryset = VentaObra.objects.filter(
-        detalle_venta_obra__obra__usuario=request.user).order_by(
+        detalle_venta_obra__obra_artista=request.user).order_by(
         '-fecha').distinct()
     page = request.GET.get('page')
     paginator = Paginator(queryset, 5)
@@ -560,18 +570,18 @@ def lista_ventas(request):
 @login_required
 def detalle_venta(request, venta_id):
     queryset = VentaObra.objects.filter(
-        detalle_venta_obra__obra__usuario=request.user, id=venta_id).distinct()
+        detalle_venta_obra__obra_artista=request.user, id=venta_id).distinct()
     venta = get_object_or_404(VentaObra, id=venta_id)
     if queryset:
         formBuscar = FormBuscar()
         cantidad_obras_vendedor = 0
         precio_total_vendedor = 0
-        for detalle in venta.detalle_venta_obra.values():
-            obra = get_object_or_404(Obra, pk=detalle['obra_id'])
-            if obra.usuario == request.user:
-                cantidad_obras_vendedor += detalle['cantidad_obra']
-                precio_total_vendedor += Decimal(detalle['precio_obra'] *
-                                                 detalle['cantidad_obra'])
+        detalle_venta = DetalleVentaObra.objects.filter(venta_obra=venta_id)
+        for detalle in detalle_venta:
+            if detalle.obra_artista == request.user:
+                cantidad_obras_vendedor += detalle.cantidad_obra
+                precio_total_vendedor += Decimal(detalle.precio_obra *
+                                                 detalle.cantidad_obra)
         return render(request, 'symbiarts_app/detalle_venta.html', {
             'venta': venta,
             'formBuscar': formBuscar,
@@ -579,7 +589,7 @@ def detalle_venta(request, venta_id):
             'precio_total_vendedor': precio_total_vendedor})
     else:
         mensaje = ("no puede visualizar esta venta, porque le pertenece a "
-                   "otro usuario.")
+                   "otro artista.")
         return render(request, 'symbiarts_app/error_generico.html', {
             'mensaje': mensaje})
 
@@ -587,7 +597,7 @@ def detalle_venta(request, venta_id):
 @login_required
 def mis_obras(request):
     queryset = Obra.objects.filter(
-        usuario=request.user).order_by('fecha_publicacion')
+        artista=request.user).order_by('fecha_publicacion')
     page = request.GET.get('page')
     paginator = Paginator(queryset, 5)
     try:

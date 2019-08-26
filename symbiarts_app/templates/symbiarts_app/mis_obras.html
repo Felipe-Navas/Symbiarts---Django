@@ -7,6 +7,7 @@
 {% endblock %}
 
 {% load humanize %}
+{% load model_tags %}
 
 {% block content %}
 
@@ -37,7 +38,7 @@
                     <div class="col">
                         <div class="row">
                             <div class="col">
-                                <p>Obras vendidas: {{ obra.cantidad_ventas_obra }}</p>
+                                <p>Obras vendidas: {% obtener_cantidad_ventas_obra obra %}</p>
                                 {% if obra.stock %}
                                     <p>Stock: {{ obra.stock }}</p>
                                 {% endif %}

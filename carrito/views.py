@@ -11,7 +11,7 @@ def agregar_obra_carrito(request, obra_id):
     carrito = Carrito(request)
     obra = get_object_or_404(Obra, id=obra_id)
 
-    if request.user == obra.usuario:
+    if request.user == obra.artista:
         mensaje = ("no puede agregar al carrito esta obra porque le pertenece"
                    " a usted mismo!.")
         return render(request, 'symbiarts_app/error_generico.html', {
