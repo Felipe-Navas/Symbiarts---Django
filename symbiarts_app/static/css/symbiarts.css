@@ -70,15 +70,29 @@ p {
     float: right;
 }
 
+@media (max-width: 576px) {
+    .imagen_categorias{
+        height: 180px;
+    }
+}
+
 @media (min-width: 576px) {
     .card-columns {
         column-count: 1;
+    }
+
+    .imagen_categorias{
+        height: 180px;
     }
 }
 
 @media (min-width: 768px) {
     .card-columns {
         column-count: 2;
+    }
+
+    .imagen_categorias{
+        height: 130px;
     }
 }
 

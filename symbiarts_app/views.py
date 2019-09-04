@@ -1,6 +1,6 @@
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import (Obra, ObraArchivo, Comentario, VentaObra,
+from .models import (Categoria, Obra, ObraArchivo, Comentario, VentaObra,
                      DetalleVentaObra)
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -31,9 +31,44 @@ def lista_obras(request):
         # Voy a la ultima página si llega una inexistente
         obras = paginator.page(paginator.num_pages)
     formBuscar = FormBuscar()
+    categorias = Categoria.objects.all()
     return render(request, 'symbiarts_app/lista_obras.html', {
         'obras': obras,
-        'formBuscar': formBuscar})
+        'formBuscar': formBuscar,
+        'categorias': categorias})
+
+
+def lista_obras_categoria(request, nombre_categoria):
+    categoria = get_object_or_404(Categoria, nombre=nombre_categoria)
+    queryset = Obra.objects.filter(
+        categoria=categoria.id,
+        fecha_publicacion__lte=timezone.now()).order_by('-fecha_publicacion')
+
+    resultados_categoria = True
+    if len(queryset) == 0:
+        resultados_categoria = False
+        queryset = Obra.objects.filter(
+            fecha_publicacion__lte=timezone.now()).order_by(
+            '-fecha_publicacion')
+
+    page = request.GET.get('page')
+    paginator = Paginator(queryset, 21)
+    try:
+        obras = paginator.page(page)
+    except PageNotAnInteger:
+        # Volver a la primera página
+        obras = paginator.page(1)
+    except EmptyPage:
+        # Voy a la ultima página si llega una inexistente
+        obras = paginator.page(paginator.num_pages)
+    formBuscar = FormBuscar()
+    categorias = Categoria.objects.all()
+    return render(request, 'symbiarts_app/lista_obras.html', {
+        'obras': obras,
+        'formBuscar': formBuscar,
+        'categoria': categoria,
+        'categorias': categorias,
+        'resultados_categoria': resultados_categoria})
 
 
 def detalle_obra(request, pk):
@@ -210,6 +245,12 @@ def buscar_obras(request):
             queryset_buscar = Obra.objects.filter(
                 lookups).order_by('-fecha_publicacion')
 
+    cantidad_resultados = len(queryset_buscar)
+    if cantidad_resultados == 0:
+        queryset_buscar = Obra.objects.filter(
+            fecha_publicacion__lte=timezone.now()).order_by(
+            '-fecha_publicacion')
+        cantidad_resultados = 0
     page = request.GET.get('page')
     paginator = Paginator(queryset_buscar, 21)
     try:
@@ -225,7 +266,8 @@ def buscar_obras(request):
     return render(request, 'symbiarts_app/lista_obras.html', {
         'obras': obras,
         'formBuscar': formBuscar,
-        'cadena_buscada': cadena_buscada})
+        'cadena_buscada': cadena_buscada,
+        'cantidad_resultados': cantidad_resultados})
 
 
 @require_POST
