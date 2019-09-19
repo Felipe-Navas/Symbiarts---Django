@@ -75,7 +75,7 @@ def detalle_obra(request, pk):
     obra = get_object_or_404(Obra, pk=pk)
     archivos_obra = ObraArchivo.objects.filter(obra__pk=pk)
 
-    queryset = obra.comentarios.all()
+    queryset = obra.comentarios.all().order_by('-fecha')
     page = request.GET.get('page')
     paginator = Paginator(queryset, 10)
     try:
@@ -131,31 +131,18 @@ def editar_obra(request, pk):
                    "artista.")
         return render(request, 'symbiarts_app/error_generico.html', {
             'mensaje': mensaje})
-#    obra_archivo = ObraArchivo.objects.filter(obra__pk=pk)
     if request.method == "POST":
         form = FormObra(request.POST, instance=obra)
-        file_form = FormObraArchivos(
-            request.POST,
-            request.FILES,
-            instance=obra)
-        files = request.FILES.getlist('archivo')
-        if form.is_valid() and file_form.is_valid():
+        if form.is_valid():
             obra = form.save(commit=False)
             obra.artista = request.user
             obra.save()
-            # Ver si borro to lo que tiene relacionado el ObraArchivos
-            for f in files:
-                obra_archivo = ObraArchivo(archivo=f, obra=obra)
-                obra_archivo.save()
             return redirect('symbiarts_app:detalle_obra', pk=obra.pk)
     else:
         form = FormObra(instance=obra)
-#        file_form = FormObraArchivos(instance=obra_archivo)
-        file_form = FormObraArchivos()
     es_nueva_obra = False
     return render(request, 'symbiarts_app/editar_obra.html', {
         'form': form,
-        'file_form': file_form,
         'es_nueva_obra': es_nueva_obra})
 
 
@@ -424,6 +411,11 @@ def compra_exitosa(request, nro_compra):
 
 
 def comprar_carrito(request):
+    mensaje = validar_obras_carrito(request)
+    if mensaje:
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
     carrito = Carrito(request)
     # precio_total = carrito.obtener_precio_total()
     # cantidad_obras_carrito = carrito.__len__()
@@ -493,33 +485,14 @@ def crear_preference_api_mercadopago_carrito(request):
 @login_required
 @require_POST
 def grabar_compra_carrito(request):
-    carrito = request.session.get(settings.CARRITO_SESSION_ID)
+    mensaje = validar_obras_carrito(request)
+    if mensaje:
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
 
+    carrito = request.session.get(settings.CARRITO_SESSION_ID)
     obra_ids = carrito.keys()
     obras = Obra.objects.filter(id__in=obra_ids)
-
-    # Controlo que todas las obras del carrito se puedan comprar
-    for obra in obras:
-        # Controlo que sean de otro artista
-        if request.user == obra.artista:
-            mensaje = ("una de las obras del carrito, no se puede comprar "
-                       "porque le pertenece a usted mismo!.")
-            return render(request, 'symbiarts_app/error_generico.html', {
-                'mensaje': mensaje})
-
-        # Controlo que sean ArtSale
-        if obra.tipo == 'AW':
-            mensaje = ("una de las obras del carrito, no se puede comprar "
-                       "porque es de tipo ArtWork.")
-            return render(request, 'symbiarts_app/error_generico.html', {
-                'mensaje': mensaje})
-
-        # Controlo que no esten pausadas
-        if obra.pausada:
-            mensaje = ("una de las obras del carrito, no se puede comprar "
-                       "porque esta pausada.")
-            return render(request, 'symbiarts_app/error_generico.html', {
-                'mensaje': mensaje})
 
     id_pago = int(request.POST["payment_id"])
     if id_pago is None:
@@ -551,6 +524,33 @@ def grabar_compra_carrito(request):
     carrito.clear()
     request.session['compra_exitosa'] = True
     return redirect('symbiarts_app:compra_exitosa', nro_compra=venta_obra.id)
+
+
+def validar_obras_carrito(request):
+    carrito = request.session.get(settings.CARRITO_SESSION_ID)
+
+    obra_ids = carrito.keys()
+    obras = Obra.objects.filter(id__in=obra_ids)
+
+    # Controlo que todas las obras del carrito se puedan comprar
+    for obra in obras:
+        # Controlo que sean de otro artista
+        if request.user == obra.artista:
+            mensaje = ("una de las obras del carrito, no se puede comprar "
+                       "porque le pertenece a usted mismo!.")
+            return mensaje
+
+        # Controlo que sean ArtSale
+        if obra.tipo == 'AW':
+            mensaje = ("una de las obras del carrito, no se puede comprar "
+                       "porque es de tipo ArtWork.")
+            return mensaje
+
+        # Controlo que no esten pausadas
+        if obra.pausada:
+            mensaje = ("una de las obras del carrito, no se puede comprar "
+                       "porque esta pausada.")
+            return mensaje
 
 
 @login_required

@@ -1,5 +1,5 @@
 body {
-    background-image: url(../img/white_wall_hash.png);
+    background-color: #455a64;
 }
 
 .date {
@@ -100,4 +100,55 @@ p {
     .card-columns {
         column-count: 3;
     }
+}
+
+.hover_menu:hover > .dropdown-menu {
+  display: block;
+}
+
+.hover_menu > .dropdown-toggle:active {
+  /*Without this, clicking will make it sticky*/
+    pointer-events: none;
+}
+
+.hover_menu .submenu_obras {
+    top: 35px;
+}
+
+.hover_menu .submenu_transacciones {
+    top: 65px;
+}
+
+.btn {
+    font-weight: normal;
+    text-transform: none;
+}
+
+.btn:first-letter {
+    text-transform: uppercase;
+}
+
+.navbar {
+    border-style: none;
+    background-color: #1c313a;
+}
+
+.card {
+    border: none;
+}
+
+/* color para el footer #718792   */
+
+button.mercadopago-button {
+    border-color: #23a127;
+    border-style: solid;
+    border-width: 0 1px 4px 1px;
+    color: #fff;
+    width: 100%;
+    font-size: 1em;
+    background-color: #28B62C;
+}
+
+.select_cantidad .form-group select {
+    width: auto;
 }

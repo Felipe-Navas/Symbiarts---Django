@@ -7,21 +7,21 @@
 {% endblock %}
 
 {% block content %}
-  <div class="row justify-content-center">
-    <div class="col-lg-8 col-md-10 col-sm-12">
-      <div class="card">
-        <div class="card-body">
-          <h3 class="card-title">Regístrate</h3>
-          <form method="post" novalidate>
-            {% csrf_token %}
-            {% include 'includes/form.html' %}
-            <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-clipboard-list"></i> Regístrate</button>
-          </form>
+    <div class="row justify-content-center mt-3">
+        <div class="col-10 col-md-8 col-lg-6">
+            <div class="shadow card">
+                <div class="card-body">
+                    <h3 class="card-title">Regístrate</h3>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% include 'includes/form.html' %}
+                        <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-clipboard-list"></i> Regístrate</button>
+                    </form>
+                </div>
+                <div class="card-footer text-muted text-center">
+                    Ya estas registrado? <a href="{% url 'login' %}">Iniciar sesión</a>
+                </div>
+            </div>
         </div>
-        <div class="card-footer text-muted text-center">
-          Ya estas registrado? <a href="{% url 'login' %}">Iniciar sesión</a>
-        </div>
-      </div>
     </div>
-  </div>
 {% endblock %}

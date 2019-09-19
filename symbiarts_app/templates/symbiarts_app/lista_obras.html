@@ -8,19 +8,21 @@
 
 {% block content %}
     {% if cadena_buscada %}
-        <div class="row mt-3 justify-content-center">
-            {% if cantidad_resultados == 0 %}
-                <h2><i class="far fa-sad-tear"></i> No hay resultados para "{{ cadena_buscada }}", pero tambien te podria interesar...</h2>
-            {% elif cantidad_resultados == 1 %}
-                <h2>Solo un resultado para "{{ cadena_buscada }}"</h2>
-            {% else %}
-                <h2>{{ cantidad_resultados }} resultados para "{{ cadena_buscada }}"</h2>
-            {% endif %}
+        <div class="row mt-3 text-white">
+            <div class="col">
+                {% if cantidad_resultados == 0 %}
+                    <h2><i class="far fa-sad-tear"></i> No hay resultados para "{{ cadena_buscada }}", pero tambien te podria interesar...</h2>
+                {% elif cantidad_resultados == 1 %}
+                    <h2>Solo un resultado para "{{ cadena_buscada }}"</h2>
+                {% else %}
+                    <h2>{{ cantidad_resultados }} resultados para "{{ cadena_buscada }}"</h2>
+                {% endif %}
+            </div>
         </div>
     {% endif %}
 
     {% if categorias %}
-        <div class="card mt-3 text-white">
+        <div class="shadow card mt-3 text-white">
             <img src="{% static 'img/fondo_filtros.png' %}" class="card-img imagen_categorias" alt="..." style="filter: brightness(50%);">
             <div class="card-img-overlay">
                 <div class="row justify-content-center">
@@ -37,20 +39,20 @@
     {% endif %}
 
     {% if categoria %}
-        <div class="row mt-4 justify-content-center">
+        <div class="row mt-4 justify-content-center text-white">
             <h3>Categoría {{ categoria.nombre }}</h3>
         </div>
     {% endif %}
 
     {% if resultados_categoria == False %}
-        <div class="row justify-content-center px-4">
+        <div class="row justify-content-center px-4 text-white">
             <h4><i class="far fa-sad-tear"></i> No hay obras para el filtro seleccionado, pero tambien te podria interesar...</h4>
         </div>
     {% endif %}
 
-    <div class="card-columns">
+    <div class="card-columns mt-2">
         {% for obra in obras %}
-            <div class="card_lista_obras card mt-3 mx-1">
+            <div class="shadow card_lista_obras card mt-2">
                 <a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">
                     {% with archivo_obra=obra.archivos.first %}
                         {% if archivo_obra.archivo.url %}

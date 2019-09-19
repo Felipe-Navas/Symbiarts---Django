@@ -12,7 +12,7 @@
 {% block content %}
 
     <ul class="list-group mt-3">
-        <h3>Mis Obras</h3>
+        <h3 class="text-white">Mis Obras</h3>
         {% for obra in obras %}
             <li class="list-group-item mb-3 rounded">
                 <div class="row">
@@ -38,32 +38,32 @@
                     <div class="col">
                         <div class="row">
                             <div class="col">
-                                <p>Obras vendidas: {% obtener_cantidad_ventas_obra obra %}</p>
+                                <p>Obras vendidas: <b>{% obtener_cantidad_ventas_obra obra %}</b></p>
                                 {% if obra.stock %}
-                                    <p>Stock: {{ obra.stock }}</p>
+                                    <p>Stock: <b>{{ obra.stock }}</b></p>
                                 {% endif %}
                                 {% if obra.precio  %}
-                                    <p>Precio: ${{ obra.precio }}</p>
+                                    <p>Precio: <b>${{ obra.precio }}</b></p>
                                 {% endif %}
                                 {% if obra.categoria %}
-                                    <p>Categoria: {{ obra.categoria }}</p>
+                                    <p>Categoria: <b>{{ obra.categoria }}</b></p>
                                 {% endif %}
                                 {% if obra.tipo %}
-                                    <p>Tipo: {{ obra.get_tipo_display }}</p>
+                                    <p>Tipo: <b>{{ obra.get_tipo_display }}</b></p>
                                 {% endif %}
                             </div>
                         </div>
                     </div>
-                    <div class="col text-right">
+                    <div class="col col-md-2">
                         <p>
-                            <a class="btn btn-outline-primary" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}"><i class="fas fa-edit"></i> Editar</a>
+                            <a class="btn btn-outline-primary btn-block" href="{% url 'symbiarts_app:editar_obra' pk=obra.pk %}"><i class="fas fa-edit"></i> Editar</a>
                         </p>
                         {% if obra.tipo == 'AS' %}
                             <p>
                                 {% if obra.pausada == True %}
-                                    <a class="btn btn-outline-success" href="{% url 'symbiarts_app:activar_obra' pk=obra.pk %}"><i class="fas fa-play-circle"></i> Activar</a>
+                                    <a class="btn btn-outline-success btn-block" href="{% url 'symbiarts_app:activar_obra' pk=obra.pk %}"><i class="fas fa-play-circle"></i> Activar</a>
                                 {% else %}
-                                    <a class="btn btn-outline-danger" href="{% url 'symbiarts_app:pausar_obra' pk=obra.pk %}"><i class="fas fa-pause-circle"></i> Pausar</a>
+                                    <a class="btn btn-outline-danger btn-block" href="{% url 'symbiarts_app:pausar_obra' pk=obra.pk %}"><i class="fas fa-pause-circle"></i> Pausar</a>
                                 {% endif %}
                             </p>
                         {% endif %}
