@@ -8,43 +8,81 @@
 
 {% block content %}
     {% if cadena_buscada %}
-        <div class="row mt-3">
-            <h4>Resultados para: "{{ cadena_buscada }}"</h4>
+        <div class="row mt-3 text-white">
+            <div class="col">
+                {% if cantidad_resultados == 0 %}
+                    <h2><i class="far fa-sad-tear"></i> No hay resultados para "{{ cadena_buscada }}", pero tambien te podria interesar...</h2>
+                {% elif cantidad_resultados == 1 %}
+                    <h2>Solo un resultado para "{{ cadena_buscada }}"</h2>
+                {% else %}
+                    <h2>{{ cantidad_resultados }} resultados para "{{ cadena_buscada }}"</h2>
+                {% endif %}
+            </div>
         </div>
     {% endif %}
-        <div class="card-columns">
-            {% for obra in obras %}
-                <div class="card_lista_obras card mt-3 mx-1">
-                    <a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">
-                        {% with archivo_obra=obra.archivos.first %}
-                            {% if archivo_obra.archivo.url %}
-                                <img class="card-img-top img-fluid" src="{{ archivo_obra.archivo.url }}" alt="{{ obra.nombre }}">
-                            {% else %}
-                                <img class="card-img-top img-fluid" src="{% static 'img/default.svg' %}" alt="{{ obra.nombre }}">
-                            {% endif %}
-                        {% endwith %}
-                        <div class="card-body">
-                            <h5>{{ obra.nombre }}
-                                {% if obra.precio %}
-                                    <span class="precio_lista_obras">${{ obra.precio }}</span>
-                                {% endif %}
-                            </h5>
-                        </div>
-                        <div class="card-footer text-muted">
-                            Publicada el {{ obra.fecha_publicacion }}
-                            <br>
-                            {% if obra.comentarios.count == 0 %}
-                                No tiene comentarios
-                            {% elif obra.comentarios.count == 1 %}
-                                Tiene 1 comentario
-                            {% else %}
-                                Tiene {{ obra.comentarios.count }} comentarios
-                            {% endif %}
-                        </div>
-                    </a>
+
+    {% if categorias %}
+        <div class="shadow card mt-3 text-white">
+            <img src="{% static 'img/fondo_filtros.png' %}" class="card-img imagen_categorias" alt="..." style="filter: brightness(50%);">
+            <div class="card-img-overlay">
+                <div class="row justify-content-center">
+                    <h2>Categorías</h2>
                 </div>
-            {% endfor %}
+                <div class="row justify-content-center">
+                    {% for categoria in categorias %}
+                        <a href="{% url 'symbiarts_app:lista_obras_categoria' categoria.nombre %}" class="btn btn-secondary m-2">{{ categoria.nombre }}</a>
+                    {% endfor %}
+                    <a href="{% url 'symbiarts_app:lista_obras' %}" class="btn btn-secondary m-2">Todas</a>
+                </div>
+            </div>
         </div>
+    {% endif %}
+
+    {% if categoria %}
+        <div class="row mt-4 justify-content-center text-white">
+            <h3>Categoría {{ categoria.nombre }}</h3>
+        </div>
+    {% endif %}
+
+    {% if resultados_categoria == False %}
+        <div class="row justify-content-center px-4 text-white">
+            <h4><i class="far fa-sad-tear"></i> No hay obras para el filtro seleccionado, pero tambien te podria interesar...</h4>
+        </div>
+    {% endif %}
+
+    <div class="card-columns mt-2">
+        {% for obra in obras %}
+            <div class="shadow card_lista_obras card mt-2">
+                <a href="{% url 'symbiarts_app:detalle_obra' pk=obra.pk %}">
+                    {% with archivo_obra=obra.archivos.first %}
+                        {% if archivo_obra.archivo.url %}
+                            <img class="card-img-top img-fluid" src="{{ archivo_obra.archivo.url }}" alt="{{ obra.nombre }}">
+                        {% else %}
+                            <img class="card-img-top img-fluid" src="{% static 'img/default.svg' %}" alt="{{ obra.nombre }}">
+                        {% endif %}
+                    {% endwith %}
+                    <div class="card-body">
+                        <h5>{{ obra.nombre }}
+                            {% if obra.precio %}
+                                <span class="precio_lista_obras">${{ obra.precio }}</span>
+                            {% endif %}
+                        </h5>
+                    </div>
+                    <div class="card-footer text-muted">
+                        Publicada el {{ obra.fecha_publicacion }}
+                        <br>
+                        {% if obra.comentarios.count == 0 %}
+                            No tiene comentarios
+                        {% elif obra.comentarios.count == 1 %}
+                            Tiene 1 comentario
+                        {% else %}
+                            Tiene {{ obra.comentarios.count }} comentarios
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
 
     {% include 'symbiarts_app/paginator.html' with paginator=obras %}
 

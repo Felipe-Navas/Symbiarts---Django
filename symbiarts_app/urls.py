@@ -6,6 +6,8 @@ app_name = 'symbiarts_app'
 urlpatterns = [
     path('', views.lista_obras, name='lista_obras'),
     path('buscar/', views.buscar_obras, name='buscar_obras'),
+    path('categoria/<str:nombre_categoria>', views.lista_obras_categoria,
+         name='lista_obras_categoria'),
     path('obra/<int:obra_id>/compra/', views.orquestar_compra_carrito,
          name='orquestar_compra_carrito'),
     path('obra/<int:obra_id>/compra/confirmar', views.grabar_compra,

@@ -12,38 +12,46 @@
         <div class="row">
             <div class="col-8">
                 <h2>Revisá y confirmá tu compra</h2>
+                <br>
 
-                <h3>Detalle del envío</h3>
+                <h4>Detalle del envío</h4>
                 <li class="list-group-item">Envío acordar con el vendedor</li>
 
-                <h3>Detalle de las obras</h3>
+                <br>
+                <h4>Detalle de las obras</h4>
                 {% for item in carrito %}
                     {% with obra=item.obra  %}
                         <li class="list-group-item">
-                            {% with archivo_obra=obra.archivos.first %}
-                                {% if archivo_obra.archivo.url %}
-                                    <img src="{{ archivo_obra.archivo.url }}" class="img-fluid" alt="{{ obra.nombre }}" style="height: 90px; width: auto">
-                                {% else %}
-                                    <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}" style="height: 90px; width: auto">
-                                {% endif %}
-                            {% endwith %}
-                            {{ obra.nombre }}
-                            ({{ item.cantidad }})
-                            Precio: ${{ item.precio }}
-                            Subtotal: ${{ item.precio_total }}
+                            <div class="row">
+                                <div class="col-md-4 col-lg-3">
+                                    {% with archivo_obra=obra.archivos.first %}
+                                        {% if archivo_obra.archivo.url %}
+                                            <img src="{{ archivo_obra.archivo.url }}" class="img-fluid" alt="{{ obra.nombre }}" style="height: 90px; width: auto">
+                                        {% else %}
+                                            <img src="{% static 'img/default.svg' %}" class="img-fluid" alt="{{ obra.nombre }}" style="height: 90px; width: auto">
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                                <div class="col pl-md-0">
+                                    <p>{{ obra.nombre }}<b>({{ item.cantidad }})</b></p>
+                                    <p>Precio: <b>${{ item.precio }}</b></p>
+                                    <p>Subtotal: <b>${{ item.precio_total }}</b></p>
+                                </div>
+                            </div>
                         </li>
                     {% endwith %}
                 {% endfor %}
 
-                <h3>Datos de facturación</h3>
+                <br>
+                <h4>Datos de facturación</h4>
                 <li class="list-group-item">{{ user.username }}</li>
 
             </div>
             <div class="col-4">
-                <h5>Resumen de compra</h5>
-                <p>Obras: {{ carrito|length }}</p>
-                <p>Envío: Acordar con el vendedor</p>
-                <p>Precio total: {{ carrito.obtener_precio_total }}</p>
+                <h2>Resumen de compra</h2>
+                <p>Obras: <b>{{ carrito|length }}</b></p>
+                <p>Envío: <b>Acordar con el vendedor</b></p>
+                <p>Precio total: <b>{{ carrito.obtener_precio_total }}</b></p>
                 <form action="{% url 'symbiarts_app:grabar_compra_carrito' %}" method="POST">
                     {% csrf_token %}
                     <script

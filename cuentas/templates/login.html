@@ -7,26 +7,22 @@
 {% endblock %}
 
 {% block content %}
-  <div class="row justify-content-center mt-3">
-    <div class="col-lg-4 col-md-6 col-sm-8">
-      <div class="card">
-        <div class="card-body">
-          <h3 class="card-title">Iniciar sesión</h3>
-          <form method="post" novalidate>
-            {% csrf_token %}
-            {% include 'includes/form.html' %}
-            <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</button>
-          </form>
+    <div class="row justify-content-center mt-3">
+        <div class="col-lg-4 col-md-6 col-sm-8">
+            <div class="shadow card">
+                <div class="card-body">
+                    <h3 class="card-title">Iniciar sesión</h3>
+                    <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% include 'includes/form.html' %}
+                        <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</button>
+                        </form>
+                </div>
+                <div class="card-footer text-muted text-center">
+                    <p>Nuevo en Symbiarts? <a href="{% url 'signup' %}">Regístrate</a></p>
+                    <a href="{% url 'password_reset' %}" class="text-muted">Olvidó la contraseña?</a>
+                </div>
+            </div>
         </div>
-        <div class="card-footer text-muted text-center">
-          Nuevo en Symbiarts? <a href="{% url 'signup' %}">Regístrate</a>
-        </div>
-      </div>
-      <div class="text-center py-2">
-        <small>
-          <a href="{% url 'password_reset' %}" class="text-muted">Olvido la contraseña?</a>
-        </small>
-      </div>
     </div>
-  </div>
 {% endblock %}
