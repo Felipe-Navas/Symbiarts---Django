@@ -10,7 +10,11 @@
     <div class="jumbotron text-xs-center mt-3">
         <h1 class="display-3">¡Ups, ha ocurrido un error!</h1>
         <p class="lead">
-            Estimad@, <strong>{{ user.username }}</strong>, {{ mensaje }}
+            {% if user.username %}
+                Estimad@, <strong>{{ user.username }}</strong>, {{ mensaje }}
+            {% else %}
+                Estimad@, {{ mensaje }}
+            {% endif %}
         </p>
         <hr>
         <p class="lead">

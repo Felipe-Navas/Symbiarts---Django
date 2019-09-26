@@ -39,9 +39,7 @@
                         <div class="row">
                             <div class="col">
                                 <p>Obras vendidas: <b>{% obtener_cantidad_ventas_obra obra %}</b></p>
-                                {% if obra.stock %}
-                                    <p>Stock: <b>{{ obra.stock }}</b></p>
-                                {% endif %}
+                                <p>Stock: <b>{{ obra.stock }}</b></p>
                                 {% if obra.precio  %}
                                     <p>Precio: <b>${{ obra.precio }}</b></p>
                                 {% endif %}
