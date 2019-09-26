@@ -257,6 +257,7 @@ def buscar_obras(request):
         'cantidad_resultados': cantidad_resultados})
 
 
+@login_required
 @require_POST
 def orquestar_compra_carrito(request, obra_id):
     obra = get_object_or_404(Obra, pk=obra_id)
@@ -280,6 +281,13 @@ def orquestar_compra_carrito(request, obra_id):
                                          stock=obra.obtener_stock())
     if formCarrito.is_valid():
         cantidad_obras = formCarrito.cleaned_data.get("cantidad")
+
+        if cantidad_obras > obra.stock:
+            mensaje = ("los sentimos, pero el stock que has seleccionado para"
+                       "esta obra, ya no esta disponible.")
+            return render(request, 'symbiarts_app/error_generico.html', {
+                'mensaje': mensaje})
+
         accion = formCarrito.cleaned_data.get("accion")
         if accion == 'comprar':
             request.session['cantidad_obras'] = cantidad_obras
@@ -371,6 +379,13 @@ def grabar_compra(request, obra_id):
             'mensaje': mensaje})
 
     cantidad_obras = request.session['cantidad_obras']
+
+    if cantidad_obras > obra.stock:
+        mensaje = ("los sentimos, pero el stock que has seleccionado para"
+                   "esta obra, ya no esta disponible.")
+        return render(request, 'symbiarts_app/error_generico.html', {
+            'mensaje': mensaje})
+
     id_pago = int(request.POST["payment_id"])
     if id_pago is None:
         mensaje = ("no pudimos encontrar el pago realizado en mercadopago, "
@@ -410,6 +425,7 @@ def compra_exitosa(request, nro_compra):
         return redirect('symbiarts_app:lista_obras')
 
 
+@login_required
 def comprar_carrito(request):
     mensaje = validar_obras_carrito(request)
     if mensaje:
@@ -552,6 +568,13 @@ def validar_obras_carrito(request):
                        "porque esta pausada.")
             return mensaje
 
+        cantidad_obras = carrito[str(obra.id)]['cantidad']
+        if cantidad_obras > obra.stock:
+            mensaje = ("los sentimos, pero el stock que has seleccionado para"
+                       "esta obra, ya no esta disponible.")
+            return render(request, 'symbiarts_app/error_generico.html', {
+                'mensaje': mensaje})
+
 
 @login_required
 def lista_compras(request):
@@ -639,7 +662,7 @@ def detalle_venta(request, venta_id):
 @login_required
 def mis_obras(request):
     queryset = Obra.objects.filter(
-        artista=request.user).order_by('fecha_publicacion')
+        artista=request.user).order_by('-fecha_publicacion')
     page = request.GET.get('page')
     paginator = Paginator(queryset, 5)
     try:

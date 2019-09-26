@@ -90,27 +90,34 @@
                     </div>
                 {% endif %}
                 {% if obra.pausada == False and obra.artista != user and obra.tipo == 'AS' %}
-                    <form class="form" action="{% url 'symbiarts_app:orquestar_compra_carrito' obra.id %}" method="post">
-                        {% csrf_token %}
-                        {% bootstrap_messages %}
-                        {% bootstrap_form_errors formCarrito %}
-                        <div class="row">
-                            <div class="col-sm-4 mr-sm-1 col-md-3 col-lg-2 mr-lg-2 mr-xl-0">
-                                <label class="pt-2" for="id_cantidad">Cantidad</label>
+                    {% if obra.stock > 0 %}
+                        <form class="form" action="{% url 'symbiarts_app:orquestar_compra_carrito' obra.id %}" method="post">
+                            {% csrf_token %}
+                            {% bootstrap_messages %}
+                            {% bootstrap_form_errors formCarrito %}
+                            <div class="row">
+                                <div class="col-sm-4 mr-sm-1 col-md-3 col-lg-2 mr-lg-2 mr-xl-0">
+                                    <label class="pt-2" for="id_cantidad">Cantidad</label>
+                                </div>
+                                <div class="col select_cantidad">
+                                    {% bootstrap_field formCarrito.cantidad show_label=False %}
+                                </div>
                             </div>
-                            <div class="col select_cantidad">
-                                {% bootstrap_field formCarrito.cantidad show_label=False %}
+                            <div class="row">
+                                <div class="col-lg-6 pr-lg-1 mb-2">
+                                    <button type="submit" class="btn btn-outline-primary btn-block" name="accion" value="agregar_al_carrito"><i class="fas fa-shopping-cart"></i> Agregar al carrito</button>
+                                </div>
+                                <div class="col-lg-6 pl-lg-1">
+                                    <button type="submit" class="btn btn-outline-success btn-block" name="accion" value="comprar"><i class="fas fa-dollar-sign"></i> Comprar</button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-6 pr-lg-1 mb-2">
-                                <button type="submit" class="btn btn-outline-primary btn-block" name="accion" value="agregar_al_carrito"><i class="fas fa-shopping-cart"></i> Agregar al carrito</button>
-                            </div>
-                            <div class="col-lg-6 pl-lg-1">
-                                <button type="submit" class="btn btn-outline-success btn-block" name="accion" value="comprar"><i class="fas fa-dollar-sign"></i> Comprar</button>
-                            </div>
-                        </div>
-                    </form>
+                        </form>
+                    {% else %}
+                    <div class="alert alert-dismissible alert-danger">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <strong><i class="far fa-sad-tear fa-2x"></i></strong> Lo sentimos, ya no queda más stock de esta obra
+                    </div>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>

@@ -1,5 +1,14 @@
+html {
+    height: 100%;
+    box-sizing: border-box;
+}
+
 body {
     background-color: #455a64;
+    position: relative;
+    margin: 0;
+    padding-bottom: 13rem;
+    min-height: 100%;
 }
 
 .date {
@@ -137,7 +146,23 @@ p {
     border: none;
 }
 
-/* color para el footer #718792   */
+footer {
+    background-color: #1B2432;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+footer a {
+    color: #999;
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: #FFF;
+    text-decoration: none;
+}
 
 button.mercadopago-button {
     border-color: #23a127;
@@ -151,4 +176,9 @@ button.mercadopago-button {
 
 .select_cantidad .form-group select {
     width: auto;
+}
+
+.pagination>li>a, .pagination>li>span {
+    text-transform: none;
+    font-weight: normal;
 }
